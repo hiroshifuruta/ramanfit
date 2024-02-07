@@ -26,6 +26,10 @@ if (argc != 2):
     print ('Usage: # python {0} [CSV_FILE]'.format(argvs[0]))
     quit()
 INFILE = argvs[1]
+BASENAME = os.path.basename(INFILE)
+OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
+OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
+
 #INFILE = "20210726MJ_MWI_28ul_std-D1.txt"
 # with open(INFILE, "r") as f:
 #     print(f.read())
@@ -75,8 +79,8 @@ pars['l2_amplitude'].set(value=15000, min=5)
 
 lorentz3 = LorentzianModel(prefix='l3_') # G' peak
 pars.update(lorentz3.make_params())
-pars['l3_center'].set(value=1603, min=1600, max=1620)
-pars['l3_sigma'].set(value=10, min=5)
+pars['l3_center'].set(value=1603, min=1595, max=1620)
+pars['l3_sigma'].set(value=10, min=5, max=100)
 pars['l3_amplitude'].set(value=1000, min=5)
 pars
 
@@ -84,7 +88,7 @@ lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
 pars.update(lorentz4.make_params())
 pars['l4_center'].set(value=1500, min=1450, max=1520)
 pars['l4_sigma'].set(value=10, min=5, max=100)
-pars['l4_amplitude'].set(value=1000, min=5)
+pars['l4_amplitude'].set(value=100, min=5, max=500)
 
 mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
 init = mod.eval(pars, x=xDG)
@@ -117,7 +121,7 @@ ax[2].set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
 ax[1].legend(loc='best', fontsize='x-small')
 ax[2].legend(loc='best', fontsize='x-small')
 
-plt.savefig("ramfit.png",dpi=130)
+plt.savefig(OUTPNGFILE,dpi=130)
 plt.show()
 
 
@@ -128,24 +132,33 @@ for parname, param in out.params.items():
 vd = out.params.valuesdict()
 #vd
 
-
+print("##############################################")
+print("FILE:\t", INFILE)
 l2_area = np.pi * vd['l2_amplitude'] * vd['l2_fwhm']
 l1_area = np.pi * vd['l1_amplitude'] * vd['l1_fwhm']
 GDAreaRatio = l2_area / l1_area
 
-print("G/D Area ratio: %f", GDAreaRatio)
+print("G/D Area ratio:\t", GDAreaRatio)
 
 l1_height = vd['l1_height']
 l2_height = vd['l2_height']
 GDHeightRatio = l2_height / l1_height
 
-GDHeightRatioMax = (l2_height + l2_height_stderr) / (l1_height - l1_height_stderr)
-GDHeightRatioMin = (l2_height - l2_height_stderr) / (l1_height + l1_height_stderr)
-GDHeightRatioPlus = GDHeightRatioMax - GDHeightRatio
-GDHeightRatioMinus = GDHeightRatio - GDHeightRatioMin
+#GDHeightRatioMax = (l2_height + l2_height_stderr) / (l1_height - l1_height_stderr)
+#GDHeightRatioMin = (l2_height - l2_height_stderr) / (l1_height + l1_height_stderr)
+#GDHeightRatioPlus = GDHeightRatioMax - GDHeightRatio
+#GDHeightRatioMinus = GDHeightRatio - GDHeightRatioMin
 
-print("G/D Height ratio: %f + %f - %f", GDHeightRatio, GDHeightRatioPlus, GDHeightRatioMinus    )
+print("G/D Height ratio:\t", GDHeightRatio)
 
+with open(OUTCSVFILE, "w") as f:
+    print("FILE:\t", INFILE, file=f)
+    print("G/D Height ratio:\t", GDHeightRatio, file=f)
+    print("G/D Area ratio:\t", GDAreaRatio, file=f)
+    print("\n", file=f)
+    print(out.fit_report(), file=f)
+
+    
 
 
 
