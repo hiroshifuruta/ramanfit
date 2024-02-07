@@ -139,7 +139,6 @@ l1_height = vd['l1_height']
 l2_height = vd['l2_height']
 GDHeightRatio = l2_height / l1_height
 
-
 GDHeightRatioMax = (l2_height + l2_height_stderr) / (l1_height - l1_height_stderr)
 GDHeightRatioMin = (l2_height - l2_height_stderr) / (l1_height + l1_height_stderr)
 GDHeightRatioPlus = GDHeightRatioMax - GDHeightRatio
