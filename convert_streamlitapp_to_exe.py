@@ -12,6 +12,8 @@ def create_spec_file(app_name, additional_data=[]):
       ('path/to/source', 'path/to/destination')
     """
     app_name_without_ext = os.path.splitext(app_name)[0]
+    data_str = repr(additional_data + [('streamlit/static', 'streamlit/static')])  # Include Streamlit static files
+
     spec_content = f"""
 # -*- mode: python ; coding: utf-8 -*-
 
@@ -20,8 +22,16 @@ block_cipher = None
 a = Analysis(['{app_name}'],
              pathex=[],
              binaries=[],
-             datas={additional_data},
-             hiddenimports=[],
+             datas={data_str},
+             hiddenimports=[
+                'streamlit', 
+                'pandas', 
+                'numpy', 
+                'pydeck', 
+                'altair', 
+                'importlib_metadata', 
+                'importlib.metadata'
+             ],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -33,21 +43,25 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          [],
-          exclude_binaries=True,
+          a.binaries,
+          a.zipfiles,
+          a.datas,
           name='{app_name_without_ext}',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=True) # Change console to True if you want a terminal to open with the app
+          console=True,  # Set to True to see console output for debugging
+          icon=None,
+          runtime_tmpdir=None,
+          exclude_binaries=False,
+          win_private_assemblies=False)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
                a.datas,
                strip=False,
                upx=True,
-               upx_exclude=[],
                name='{app_name_without_ext}')
     """
     spec_file = f"{app_name_without_ext}.spec"
@@ -68,8 +82,7 @@ def convert_streamlit_to_exe(app_name, additional_data=[]):
     spec_file = create_spec_file(app_name, additional_data)
 
     # Run PyInstaller with the spec file
-    #pyinstaller_run([spec_file, '--onefile', '--clean'])
-    pyinstaller_run([spec_file, '--clean'])
+    pyinstaller_run([spec_file, '--noconfirm', '--clean'])
 
 if __name__ == "__main__":
     # Example usage: python convert_to_exe.py app.py
