@@ -21,16 +21,14 @@ import numpy as np
 
 st.title('Raman fit')
 
-argvs = sys.argv
-argc = len(argvs)
+uploaded_file = st.file_uploader("Choose a Raman CSV file which holds 1000 - 2000 cm-1 data.", type="csv")
 
-if (argc != 2):
-    st.text('Usage: # python {0} [CSV_FILE]'.format(argvs[0]))
-    quit()
-INFILE = argvs[1]
-BASENAME = os.path.basename(INFILE)
-OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
-OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
+if uploaded_file is not None:
+    INFILE = uploaded_file.name
+    BASENAME = os.path.basename(INFILE)
+    OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
+    OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
+    data = np.loadtxt(INFILE, delimiter='\t')
 
 #INFILE = "20210726MJ_MWI_28ul_std-D1.txt"
 # with open(INFILE, "r") as f:
@@ -40,7 +38,6 @@ from lmfit import Model
 from lmfit.lineshapes import lorentzian
 from lmfit.models import LinearModel, LorentzianModel
 
-data = np.loadtxt(INFILE, delimiter='\t')
 
 #print(data)
 
@@ -55,7 +52,7 @@ xDGindex2000=np.searchsorted(x,2000)
 xDG = data[xDGindex1000:xDGindex2000,0]
 yDG = data[xDGindex1000:xDGindex2000,1]
 
-#plt.plot(xDG,yDG);plt.show()
+st.plot(xDG,yDG);st.show()
 
 # LMFIT
 
@@ -151,7 +148,7 @@ GDHeightRatio = l2_height / l1_height
 #GDHeightRatioPlus = GDHeightRatioMax - GDHeightRatio
 #GDHeightRatioMinus = GDHeightRatio - GDHeightRatioMin
 
-print("G/D Height ratio:\t", GDHeightRatio)
+st.text("G/D Height ratio:\t", GDHeightRatio)
 
 with open(OUTCSVFILE, "w") as f:
     print("FILE:\t", INFILE, file=f)
