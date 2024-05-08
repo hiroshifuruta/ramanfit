@@ -162,8 +162,8 @@ GDHeightRatioMin = (l2_height - l2_height_stderr) / (l1_height + l1_height_stder
 GDHeightRatioPlus = GDHeightRatioMax - GDHeightRatio
 GDHeightRatioMinus = GDHeightRatio - GDHeightRatioMin
 
-print("G/D Height Ratio = %f +/- %f" % (GDHeightRatio, GDHeightRatioPlus))
-st.write("G/D Height Ratio = %f +/- %f" % (GDHeightRatio, GDHeightRatioPlus))
+print("G/D Height Ratio:\t",  GDHeightRatio, "+/-", GDHeightRatioPlus)
+st.write("G/D Height Ratio:\t",  GDHeightRatio, "+/-", GDHeightRatioPlus)
 print("G/D Area ratio:\t", GDAreaRatio)
 st.write("G/D Area ratio:\t", GDAreaRatio)
 
