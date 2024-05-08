@@ -15,24 +15,7 @@
 # </OL>
 import sys
 import os
-import streamlit as st
-
-import importlib
-
-def check_package(package_name):
-    try:
-        importlib.import_module(package_name)
-        return True
-    except ImportError:
-        return False
-
-is_matplotlib_installed = check_package('matplotlib')
-if not is_matplotlib_installed:
-    print("matplotlib is not installed in the conda environment.")
-    os.system("pip install matplotlib")
-else:
-    print("matplotlib is installed in the conda environment.")
-    
+import streamlit as st    
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -113,7 +96,7 @@ out = mod.fit(yDG, pars, x=xDG)
 
 print(out.fit_report())
 
-fig, ax = plt.subplots(3,1,dpi=130)
+fig, ax = st.subplots(3,1,dpi=130)
 ax=ax.ravel()
 
 ax[0].plot(xDG, out.best_fit - yDG, 'C3-', alpha=0.5)
@@ -138,8 +121,8 @@ ax[2].set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
 ax[1].legend(loc='best', fontsize='x-small')
 ax[2].legend(loc='best', fontsize='x-small')
 
-plt.savefig(OUTPNGFILE,dpi=130)
-plt.show()
+st.savefig(OUTPNGFILE,dpi=130)
+st.show()
 
 
 for parname, param in out.params.items():
