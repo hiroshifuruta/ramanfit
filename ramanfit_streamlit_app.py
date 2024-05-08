@@ -19,11 +19,13 @@ import streamlit as st
 #import matplotlib.pyplot as plt
 import numpy as np
 
+st.title('Raman fit')
+
 argvs = sys.argv
 argc = len(argvs)
 
 if (argc != 2):
-    print ('Usage: # python {0} [CSV_FILE]'.format(argvs[0]))
+    st.text('Usage: # python {0} [CSV_FILE]'.format(argvs[0]))
     quit()
 INFILE = argvs[1]
 BASENAME = os.path.basename(INFILE)
