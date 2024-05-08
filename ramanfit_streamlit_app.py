@@ -16,6 +16,23 @@
 import sys
 import os
 
+
+import importlib
+
+def check_package(package_name):
+    try:
+        importlib.import_module(package_name)
+        return True
+    except ImportError:
+        return False
+
+is_matplotlib_installed = check_package('matplotlib')
+if not is_matplotlib_installed:
+    print("matplotlib is not installed in the conda environment.")
+    ! conda install conda-forge::matplotlib -y
+else:
+    print("matplotlib is installed in the conda environment.")
+    
 import matplotlib.pyplot as plt
 import numpy as np
 
