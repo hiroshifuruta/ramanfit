@@ -16,33 +16,29 @@
 import sys
 import os
 import streamlit as st    
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
+
 
 st.title('Raman fit')
 
-uploaded_file = st.file_uploader("Choose a Raman CSV file which holds 1000 - 2000 cm-1 data.", type="csv")
+uploaded_file = st.file_uploader("Choose a Raman CSV file which holds 1000 - 2000 cm-1 data.")
 
 if uploaded_file is not None:
-    INFILE = uploaded_file.name
+    INFILE = uploaded_file
     BASENAME = os.path.basename(INFILE)
     OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
     OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
-    data = np.loadtxt(INFILE, delimiter='\t')
-
-#INFILE = "20210726MJ_MWI_28ul_std-D1.txt"
-# with open(INFILE, "r") as f:
-#     print(f.read())
+    data = np.loadtxt(uploaded_file, delimiter='\\t')
 
 from lmfit import Model
 from lmfit.lineshapes import lorentzian
 from lmfit.models import LinearModel, LorentzianModel
 
-
-#print(data)
-
 x = data[:,0]
 y = data[:,1]
+
+#print(data)
 
 #plt.plot(x,y);plt.show()
 
@@ -52,7 +48,9 @@ xDGindex2000=np.searchsorted(x,2000)
 xDG = data[xDGindex1000:xDGindex2000,0]
 yDG = data[xDGindex1000:xDGindex2000,1]
 
-st.plot(xDG,yDG);st.show()
+fig = plt.figure()
+plt.plot(xDG,yDG)
+st.pyplot(fig)
 
 # LMFIT
 
@@ -93,9 +91,9 @@ mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
 init = mod.eval(pars, x=xDG)
 out = mod.fit(yDG, pars, x=xDG)
 
-print(out.fit_report())
+#print(out.fit_report())
 
-fig, ax = st.subplots(3,1,dpi=130)
+fig, ax = plt.subplots(3,1,dpi=130)
 ax=ax.ravel()
 
 ax[0].plot(xDG, out.best_fit - yDG, 'C3-', alpha=0.5)
@@ -120,8 +118,9 @@ ax[2].set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
 ax[1].legend(loc='best', fontsize='x-small')
 ax[2].legend(loc='best', fontsize='x-small')
 
-st.savefig(OUTPNGFILE,dpi=130)
-st.show()
+plt.savefig(OUTPNGFILE,dpi=130)
+#st.show()
+st.pyplot(fig)
 
 
 for parname, param in out.params.items():
@@ -148,7 +147,7 @@ GDHeightRatio = l2_height / l1_height
 #GDHeightRatioPlus = GDHeightRatioMax - GDHeightRatio
 #GDHeightRatioMinus = GDHeightRatio - GDHeightRatioMin
 
-st.text("G/D Height ratio:\t", GDHeightRatio)
+st.write("G/D Height ratio:\t", GDHeightRatio)
 
 with open(OUTCSVFILE, "w") as f:
     print("FILE:\t", INFILE, file=f)

@@ -1,0 +1,82 @@
+FILE:	 20210726MJ_MWI_28ul_std-D1.txt
+G/D Height ratio:	 1.2073567174797506
+G/D Area ratio:	 0.8215473800173365
+
+
+[[Model]]
+    ((((Model(lorentzian, prefix='l1_') + Model(lorentzian, prefix='l2_')) + Model(lorentzian, prefix='l3_')) + Model(lorentzian, prefix='l4_')) + Model(linear, prefix='lin_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 723
+    # data points      = 7490
+    # variables        = 14
+    chi-square         = 67289.0094
+    reduced chi-square = 9.00067006
+    Akaike info crit   = 16471.7566
+    Bayesian info crit = 16568.6551
+    R-squared          = 0.99680114
+[[Variables]]
+    lin_slope:     -0.01046839 +/- 1.2823e-04 (1.22%) (init = -0.02434553)
+    lin_intercept:  709.194343 +/- 0.20415016 (0.03%) (init = 763.4595)
+    l1_amplitude:   16126.4232 +/- 26.2169512 (0.16%) (init = 10000)
+    l1_center:      1338.60457 +/- 0.03407639 (0.00%) (init = 1336)
+    l1_sigma:       26.9643540 +/- 0.05501287 (0.20%) (init = 10)
+    l1_fwhm:        53.9287080 +/- 0.11002574 (0.20%) == '2.0000000*l1_sigma'
+    l1_height:      190.369855 +/- 0.23975036 (0.13%) == '0.3183099*l1_amplitude/max(1e-15, l1_sigma)'
+    l2_amplitude:   16060.9844 +/- 48.1836295 (0.30%) (init = 15000)
+    l2_center:      1570.76339 +/- 0.04109169 (0.00%) (init = 1550)
+    l2_sigma:       22.2427523 +/- 0.06380476 (0.29%) (init = 23)
+    l2_fwhm:        44.4855046 +/- 0.12760952 (0.29%) == '2.0000000*l2_sigma'
+    l2_height:      229.844323 +/- 0.29832251 (0.13%) == '0.3183099*l2_amplitude/max(1e-15, l2_sigma)'
+    l3_amplitude:   1887.22654 +/- 34.4624704 (1.83%) (init = 1000)
+    l3_center:      1606.74459 +/- 0.10435091 (0.01%) (init = 1603)
+    l3_sigma:       11.9136227 +/- 0.19061566 (1.60%) (init = 10)
+    l3_fwhm:        23.8272453 +/- 0.38123132 (1.60%) == '2.0000000*l3_sigma'
+    l3_height:      50.4231927 +/- 0.44188769 (0.88%) == '0.3183099*l3_amplitude/max(1e-15, l3_sigma)'
+    l4_amplitude:   499.999997 +/- 23.8823893 (4.78%) (init = 100)
+    l4_center:      1469.66286 +/- 0.76776978 (0.05%) (init = 1500)
+    l4_sigma:       21.0003334 +/- 1.25255694 (5.96%) (init = 10)
+    l4_fwhm:        42.0006668 +/- 2.50511388 (5.96%) == '2.0000000*l4_sigma'
+    l4_height:      7.57868677 +/- 0.77238483 (10.19%) == '0.3183099*l4_amplitude/max(1e-15, l4_sigma)'
+[[Correlations]] (unreported correlations are < 0.100)
+    C(lin_slope, lin_intercept)    = -0.9708
+    C(l2_amplitude, l2_sigma)      = +0.9031
+    C(l3_amplitude, l3_sigma)      = +0.8773
+    C(l2_amplitude, l3_amplitude)  = -0.8653
+    C(l4_amplitude, l4_sigma)      = -0.7982
+    C(l1_amplitude, l1_sigma)      = +0.7868
+    C(l2_center, l3_amplitude)     = -0.7558
+    C(l2_sigma, l3_amplitude)      = -0.7317
+    C(l2_amplitude, l3_sigma)      = -0.6968
+    C(l2_amplitude, l2_center)     = +0.6623
+    C(l2_center, l3_sigma)         = -0.6071
+    C(l2_center, l2_sigma)         = +0.5581
+    C(l2_sigma, l3_sigma)          = -0.5328
+    C(l2_center, l3_center)        = +0.5144
+    C(l3_amplitude, l3_center)     = -0.5115
+    C(l2_amplitude, l3_center)     = +0.5085
+    C(l3_center, l3_sigma)         = -0.4331
+    C(l2_sigma, l4_amplitude)      = +0.4168
+    C(l2_amplitude, l4_amplitude)  = +0.4140
+    C(lin_intercept, l1_amplitude) = -0.4009
+    C(l2_sigma, l3_center)         = +0.3778
+    C(l2_amplitude, l4_sigma)      = -0.3290
+    C(l2_sigma, l4_sigma)          = -0.3201
+    C(lin_slope, l1_amplitude)     = +0.3007
+    C(lin_intercept, l1_sigma)     = -0.2925
+    C(l3_amplitude, l4_amplitude)  = -0.2920
+    C(lin_slope, l1_sigma)         = +0.2223
+    C(l3_sigma, l4_amplitude)      = -0.2086
+    C(l3_amplitude, l4_sigma)      = +0.2073
+    C(l1_amplitude, l4_sigma)      = -0.1891
+    C(l1_sigma, l4_amplitude)      = +0.1861
+    C(l1_amplitude, l4_amplitude)  = +0.1785
+    C(l2_sigma, l4_center)         = -0.1749
+    C(l2_amplitude, l4_center)     = -0.1720
+    C(l1_sigma, l4_sigma)          = -0.1706
+    C(l3_sigma, l4_sigma)          = +0.1462
+    C(l3_center, l4_amplitude)     = +0.1324
+    C(l2_center, l4_amplitude)     = +0.1314
+    C(l1_center, l4_amplitude)     = +0.1166
+    C(l3_amplitude, l4_center)     = +0.1143
+    C(l1_center, l4_sigma)         = -0.1039
