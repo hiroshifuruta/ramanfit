@@ -29,7 +29,7 @@ def check_package(package_name):
 is_matplotlib_installed = check_package('matplotlib')
 if not is_matplotlib_installed:
     print("matplotlib is not installed in the conda environment.")
-    os.system("conda install conda-forge::matplotlib -y")
+    os.system("pip install matplotlib")
 else:
     print("matplotlib is installed in the conda environment.")
     
