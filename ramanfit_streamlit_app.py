@@ -6,13 +6,14 @@
 # 2021.08.10 ver.0.1 by fur.    curve fit with LMFIT and shows fitting curves.<br>
 # 2021.08.10 ver.0.11 by fur.    Get G/D area ratio, and G/D height ratio <br>
 # 2021.08.10 ver.0.12 by fur.   File chooser only works for jupyter notebook using ipyfilechooser <br>
+#
+# 2024.05.08 streamlit_app ver.0.1 by fur.   ramanfit_streamlit_app.py
 
-# <H4>References:<H4>
-# <OL>
-#     <LI>LMFIT, https://lmfit.github.io/lmfit-py/</LI>
-#     <LI>https://sabopy.com/py/lmfit-5/</LI>
-#     <LI>Multi peak fitting, emilyripka, https://github.com/emilyripka/BlogRepo/blob/master/181119_PeakFitting.ipynb</LI>
-# </OL>
+# References:
+#     LMFIT, https://lmfit.github.io/lmfit-py/
+#     https://sabopy.com/py/lmfit-5/
+#     Multi peak fitting, emilyripka, https://github.com/emilyripka/BlogRepo/blob/master/181119_PeakFitting.ipynb 
+
 import sys
 import os
 import streamlit as st    
@@ -20,7 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-st.title('Raman fit')
+st.title('Raman fit with lmfit')
 
 uploaded_file = st.file_uploader("Choose a Raman CSV file which holds 1000 - 2000 cm-1 data.")
 
@@ -30,14 +31,22 @@ if uploaded_file:
     BASENAME = os.path.basename(INFILE)
     OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
     OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
-    data = np.loadtxt(uploaded_file, delimiter='\t')
+    try:
+        data = np.loadtxt(uploaded_file, delimiter='\t')
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        data = None
 
 from lmfit import Model
 from lmfit.lineshapes import lorentzian
 from lmfit.models import LinearModel, LorentzianModel
 
-x = data[:,0]
-y = data[:,1]
+if data is not None:
+    try:
+        x = data[:,0]
+        y = data[:,0]
+    except IndexError as e:
+        st.error(f"Data format error: {e}")
 
 #print(data)
 
