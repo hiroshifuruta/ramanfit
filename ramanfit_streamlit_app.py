@@ -16,7 +16,7 @@
 import sys
 import os
 import streamlit as st    
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
 
 argvs = sys.argv
