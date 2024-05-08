@@ -1,14 +1,4 @@
-numpy>=1.23
-scipy>=1.8
-asteval>=0.9.28
-uncertainties>=3.1.4
-dill>=0.3.4
-lmfit>=0.9,!=1.0.1
-python>=3.6
-freetype>-2.3
-libpng>=1.2
-setuptools
-cycler>=0.10
-dateutil>=2.1
-kiwisolver>=1.0
+numpy
+scipy
+lmfit
 matplotlib
