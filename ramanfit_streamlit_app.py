@@ -37,8 +37,10 @@ if uploaded_file is None:
 
 if not os.path.exists('data'):
     os.mkdir('data')
-analyze_button=None
-if uploaded_file:
+
+
+
+if uploaded_file is not None:
     INFILE = uploaded_file.name
     BASENAME = os.path.basename(INFILE)
     DATAFOLDER = "data"
@@ -54,7 +56,7 @@ if uploaded_file:
     try:
         data = np.loadtxt(uploaded_file, delimiter='\t')
         st.write("Data loaded.")
-        analyze_button = st.button("Analyze")
+
         if data is not None:
             try:
                 x = data[:,0]
@@ -65,9 +67,7 @@ if uploaded_file:
         st.error(f"Error loading data: {e}")
         data = None
 
-#if data is not None and analyze_button is None:
-#    st.write("Click Analyze button to start analysis.")
-if analyze_button is not None:
+if uploaded_file is not None:
     fig, ax = plt.subplots()
     plt.plot(x,y)
     ax.set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
@@ -80,16 +80,16 @@ if analyze_button is not None:
 
     xDG = data[xDGindex1000:xDGindex2000,0]
     yDG = data[xDGindex1000:xDGindex2000,1]
+#if data is not None and analyze_button is None:
+#    st.write("Click Analyze button to start analysis.")
 
-#fig, ax = plt.subplots()
-#plt.plot(xDG,yDG)
-#ax.set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
-#ax.minorticks_on()
-#ax.xaxis.set_tick_params(which='minor', bottom=True)
-#st.pyplot(fig)
 
+
+analyze_button = None
+
+if st.button("Analyze"):
+    analyze_button=1
 # LMFIT
-
     LMFIT_TIME = datetime.now() # Make a time stamp of processing
 
     bg = LinearModel(prefix='lin_')
