@@ -1,0 +1,100 @@
+FILE:	 240403b-09-2.txt
+G/D Height ratio:	 2.0366295863150117
+G/D Area ratio:	 0.9763471874995686
+
+
+[[Model]]
+    ((((Model(lorentzian, prefix='l1_') + Model(lorentzian, prefix='l2_')) + Model(lorentzian, prefix='l3_')) + Model(lorentzian, prefix='l4_')) + Model(linear, prefix='lin_'))
+[[Fit Statistics]]
+    # fitting method   = leastsq
+    # function evals   = 484
+    # data points      = 7461
+    # variables        = 14
+    chi-square         = 9134.91106
+    reduced chi-square = 1.22665651
+    Akaike info crit   = 1538.21085
+    Bayesian info crit = 1635.05508
+    R-squared          = 0.98948005
+[[Variables]]
+    lin_slope:     -0.00265487 +/- 4.8116e-05 (1.81%) (init = -0.003008263)
+    lin_intercept:  677.652311 +/- 0.07703687 (0.01%) (init = 685.5402)
+    l1_amplitude:   2647.94583 +/- 19.6034135 (0.74%) (init = 10000)
+    l1_center:      1349.43147 +/- 0.12847847 (0.01%) (init = 1336)
+    l1_sigma:       34.4998688 +/- 0.23951378 (0.69%) (init = 10)
+    l1_fwhm:        68.9997376 +/- 0.47902756 (0.69%) == '2.0000000*l1_sigma'
+    l1_height:      24.4310312 +/- 0.08896713 (0.36%) == '0.3183099*l1_amplitude/max(1e-15, l1_sigma)'
+    l2_amplitude:   3733.93935 +/- 33.1544466 (0.89%) (init = 15000)
+    l2_center:      1581.97821 +/- 0.09353505 (0.01%) (init = 1550)
+    l2_sigma:       23.8871072 +/- 0.16530615 (0.69%) (init = 15)
+    l2_fwhm:        47.7742144 +/- 0.33061229 (0.69%) == '2.0000000*l2_sigma'
+    l2_height:      49.7569610 +/- 0.16076766 (0.32%) == '0.3183099*l2_amplitude/max(1e-15, l2_sigma)'
+    l3_amplitude:   551.434050 +/- 21.1415037 (3.83%) (init = 1000)
+    l3_center:      1617.45238 +/- 0.25398814 (0.02%) (init = 1603)
+    l3_sigma:       15.5189550 +/- 0.42301713 (2.73%) (init = 10)
+    l3_fwhm:        31.0379100 +/- 0.84603426 (2.73%) == '2.0000000*l3_sigma'
+    l3_height:      11.3104856 +/- 0.21022708 (1.86%) == '0.3183099*l3_amplitude/max(1e-15, l3_sigma)'
+    l4_amplitude:   737.949517 +/- 41.1077724 (5.57%) (init = 100)
+    l4_center:      1472.39989 +/- 1.37898987 (0.09%) (init = 1500)
+    l4_sigma:       62.0584174 +/- 3.37149475 (5.43%) (init = 10)
+    l4_fwhm:        124.116835 +/- 6.74298950 (5.43%) == '2.0000000*l4_sigma'
+    l4_height:      3.78508906 +/- 0.06439391 (1.70%) == '0.3183099*l4_amplitude/max(1e-15, l4_sigma)'
+[[Correlations]] (unreported correlations are < 0.100)
+    C(lin_slope, lin_intercept)    = -0.9639
+    C(l4_amplitude, l4_sigma)      = +0.9525
+    C(l2_amplitude, l2_sigma)      = +0.9463
+    C(l3_amplitude, l3_sigma)      = +0.8935
+    C(l1_amplitude, l1_sigma)      = +0.8731
+    C(l2_amplitude, l3_amplitude)  = -0.8711
+    C(l2_center, l3_amplitude)     = -0.8345
+    C(l2_sigma, l3_amplitude)      = -0.7745
+    C(l1_amplitude, l4_amplitude)  = -0.7414
+    C(l3_amplitude, l3_center)     = -0.7217
+    C(l1_amplitude, l4_sigma)      = -0.7103
+    C(l2_amplitude, l3_sigma)      = -0.6932
+    C(l2_center, l3_center)        = +0.6912
+    C(l2_amplitude, l2_center)     = +0.6870
+    C(l2_center, l3_sigma)         = -0.6860
+    C(l2_amplitude, l3_center)     = +0.6691
+    C(l2_amplitude, l4_amplitude)  = -0.6424
+    C(l3_center, l3_sigma)         = -0.6276
+    C(l2_sigma, l4_amplitude)      = -0.6174
+    C(l2_center, l2_sigma)         = +0.6067
+    C(l1_sigma, l4_amplitude)      = -0.5640
+    C(l2_sigma, l3_sigma)          = -0.5631
+    C(l2_amplitude, l4_sigma)      = -0.5625
+    C(l2_sigma, l3_center)         = +0.5431
+    C(l2_sigma, l4_sigma)          = -0.5291
+    C(l1_sigma, l4_sigma)          = -0.5124
+    C(l1_center, l4_amplitude)     = -0.4305
+    C(l2_sigma, l4_center)         = -0.4193
+    C(l2_amplitude, l4_center)     = -0.4120
+    C(l1_amplitude, l1_center)     = +0.3966
+    C(l1_center, l4_sigma)         = -0.3929
+    C(l1_amplitude, l2_amplitude)  = +0.3469
+    C(l3_amplitude, l4_amplitude)  = +0.3281
+    C(l1_amplitude, l2_sigma)      = +0.3236
+    C(l1_center, l1_sigma)         = +0.3235
+    C(l3_amplitude, l4_center)     = +0.2944
+    C(l3_center, l4_amplitude)     = -0.2679
+    C(l1_amplitude, l4_center)     = +0.2558
+    C(l1_sigma, l4_center)         = +0.2557
+    C(l3_amplitude, l4_sigma)      = +0.2449
+    C(l1_sigma, l2_amplitude)      = +0.2392
+    C(lin_slope, l1_amplitude)     = +0.2293
+    C(lin_intercept, l1_sigma)     = -0.2275
+    C(l1_sigma, l2_sigma)          = +0.2225
+    C(lin_intercept, l1_amplitude) = -0.2224
+    C(lin_slope, l1_sigma)         = +0.2199
+    C(l3_center, l4_sigma)         = -0.2198
+    C(l1_center, l4_center)        = +0.2164
+    C(l3_sigma, l4_center)         = +0.2068
+    C(l3_sigma, l4_amplitude)      = +0.2034
+    C(l3_center, l4_center)        = -0.1930
+    C(l1_center, l2_amplitude)     = +0.1666
+    C(l2_center, l4_amplitude)     = -0.1548
+    C(l2_center, l4_center)        = -0.1543
+    C(l1_center, l2_sigma)         = +0.1524
+    C(l3_sigma, l4_sigma)          = +0.1404
+    C(l1_amplitude, l3_center)     = +0.1317
+    C(l1_amplitude, l3_amplitude)  = -0.1144
+    C(l4_amplitude, l4_center)     = +0.1092

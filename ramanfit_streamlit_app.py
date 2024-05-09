@@ -97,8 +97,8 @@ pars['l2_amplitude'].set(value=15000, min=5)
 
 lorentz3 = LorentzianModel(prefix='l3_') # G' peak
 pars.update(lorentz3.make_params())
-pars['l3_center'].set(value=1603, min=1590, max=1620)
-pars['l3_sigma'].set(value=10, min=5, max=100)
+pars['l3_center'].set(value=1605, min=1590, max=1620)
+pars['l3_sigma'].set(value=8, min=5, max=100)
 pars['l3_amplitude'].set(value=1000, min=5)
 #pars
 
