@@ -30,12 +30,21 @@ st.title('Raman fit with lmfit')
 
 uploaded_file = st.file_uploader("Choose a Raman CSV file which holds 1000 - 2000 cm-1 data.")
 
+if not os.path.exists('data'):
+    os.mkdir('data')
 
 if uploaded_file:
     INFILE = uploaded_file.name
     BASENAME = os.path.basename(INFILE)
+    DATAFOLDER = "data"
     OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
     OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
+    print(INFILE)
+    print(BASENAME)
+    print(DATAFOLDER)
+    print(OUTPNGFILE)
+    print(OUTCSVFILE) 
+       
     try:
         data = np.loadtxt(uploaded_file, delimiter='\t')
         st.write("Data loaded.")
@@ -144,7 +153,7 @@ ax[2].set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
 ax[1].legend(loc='best', fontsize='x-small')
 ax[2].legend(loc='best', fontsize='x-small')
 
-plt.savefig(OUTPNGFILE,dpi=130)
+plt.savefig(DATAFOLDER+"/"+OUTPNGFILE,dpi=130)
 #st.show()
 st.pyplot(fig)
 
@@ -183,7 +192,7 @@ st.write("G/D Height Ratio:\t",  GDHeightRatio, "+/-", GDHeightRatioPlus)
 print("G/D Area ratio:\t", GDAreaRatio)
 st.write("G/D Area ratio:\t", GDAreaRatio)
 
-with open(OUTCSVFILE, "w") as f:
+with open(DATAFOLDER+"/"+OUTCSVFILE, "w") as f:
     print("FILE:\t", INFILE, file=f)
     print("G/D Height ratio:\t", GDHeightRatio, file=f)
     print("G/D Area ratio:\t", GDAreaRatio, file=f)
