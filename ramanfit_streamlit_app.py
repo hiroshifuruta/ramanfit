@@ -90,45 +90,41 @@ yDG = data[xDGindex1000:xDGindex2000,1]
 #st.pyplot(fig)
 
 # LMFIT
+def lmfit():
+    LMFIT_TIME = datetime.now() # Make a time stamp of processing
 
-LMFIT_TIME = datetime.now() # Make a time stamp of processing
+    bg = LinearModel(prefix='lin_')
+    pars = bg.guess(yDG, x=xDG)
 
-bg = LinearModel(prefix='lin_')
-pars = bg.guess(yDG, x=xDG)
-#pars
+    lorentz1 = LorentzianModel(prefix='l1_')  # D peak
+    pars.update(lorentz1.make_params())
+    pars['l1_center'].set(value=1336, min=1300, max=1380)
+    pars['l1_sigma'].set(value=10, min=5)
+    pars['l1_amplitude'].set(value=10000, min=5)
 
-lorentz1 = LorentzianModel(prefix='l1_')  # D peak
-#pars = lorentz1.guess(yDG, x=xDG)
-pars.update(lorentz1.make_params())
-pars['l1_center'].set(value=1336, min=1300, max=1380)
-pars['l1_sigma'].set(value=10, min=5)
-pars['l1_amplitude'].set(value=10000, min=5)
-#pars
+    lorentz2 = LorentzianModel(prefix='l2_')  # G peak
+    pars.update(lorentz2.make_params())
+    pars['l2_center'].set(value=1550, min=1500, max=1590)
+    pars['l2_sigma'].set(value=15, min=3)
+    pars['l2_amplitude'].set(value=20000, min=5)
 
-lorentz2 = LorentzianModel(prefix='l2_')  # G peak
-pars.update(lorentz2.make_params())
+    lorentz3 = LorentzianModel(prefix='l3_') # G' peak
+    pars.update(lorentz3.make_params())
+    pars['l3_center'].set(value=1606, min=1598, max=1630)
+    pars['l3_sigma'].set(value=6, min=2, max=40)
+    pars['l3_amplitude'].set(value=20, min=2, max=1500)
 
-pars['l2_center'].set(value=1550, min=1500, max=1590)
-pars['l2_sigma'].set(value=15, min=3)
-pars['l2_amplitude'].set(value=20000, min=5)
-#pars
+    lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
+    pars.update(lorentz4.make_params())
+    pars['l4_center'].set(value=1480, min=1440, max=1520)
+    pars['l4_sigma'].set(value=6, min=3, max=100)
+    pars['l4_amplitude'].set(value=200, min=2, max=2000)
 
-lorentz3 = LorentzianModel(prefix='l3_') # G' peak
-pars.update(lorentz3.make_params())
-pars['l3_center'].set(value=1606, min=1598, max=1630)
-pars['l3_sigma'].set(value=6, min=2, max=40)
-pars['l3_amplitude'].set(value=20, min=2, max=1500)
-#pars
+    mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
+    init = mod.eval(pars, x=xDG)
+    out = mod.fit(yDG, pars, x=xDG)
 
-lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
-pars.update(lorentz4.make_params())
-pars['l4_center'].set(value=1480, min=1440, max=1520)
-pars['l4_sigma'].set(value=6, min=3, max=100)
-pars['l4_amplitude'].set(value=200, min=2, max=2000)
-
-mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
-init = mod.eval(pars, x=xDG)
-out = mod.fit(yDG, pars, x=xDG)
+lmfit()
 
 print(out.fit_report())
 
@@ -136,11 +132,10 @@ fig, ax = plt.subplots(3,1,dpi=130)
 ax=ax.ravel()
 
 ax[0].plot(xDG, out.best_fit - yDG, 'C3-', alpha=0.5)
-
 ax[1].plot(xDG, yDG, 'C1.',alpha=0.5)
 ax[1].plot(xDG, out.best_fit, '-', label='best fit',zorder=10,lw=2, alpha=0.6)
-
 ax[2].plot(xDG, yDG, 'C1.')
+
 comps = out.eval_components(x=xDG)
 ax[2].plot(xDG, comps['l1_']+comps['lin_'], 'C2--', label='Lorentzian compo. 1')
 ax[2].fill_between(xDG, comps['l1_']+comps['lin_'], comps['lin_'],facecolor='C2',alpha=0.3)
@@ -165,7 +160,6 @@ ax[2].legend(loc='best', fontsize='x-small')
 plt.savefig(DATAFOLDER+"/"+OUTPNGFILE,dpi=130)
 #st.show()
 st.pyplot(fig)
-
 
 for parname, param in out.params.items():
     print("%s = %f +/- %f " % (parname, param.value, param.stderr))
