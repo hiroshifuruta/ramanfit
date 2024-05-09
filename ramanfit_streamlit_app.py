@@ -41,11 +41,12 @@ if uploaded_file:
     DATAFOLDER = "data"
     OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
     OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
+    
     print(INFILE)
-    print(BASENAME)
-    print(DATAFOLDER)
-    print(OUTPNGFILE)
-    print(OUTCSVFILE) 
+    #print(BASENAME)
+    #print(DATAFOLDER)
+    #print(OUTPNGFILE)
+    #print(OUTCSVFILE) 
        
     try:
         data = np.loadtxt(uploaded_file, delimiter='\t')
@@ -105,21 +106,21 @@ pars.update(lorentz2.make_params())
 
 pars['l2_center'].set(value=1550, min=1500, max=1590)
 pars['l2_sigma'].set(value=15, min=3)
-pars['l2_amplitude'].set(value=15000, min=5)
+pars['l2_amplitude'].set(value=20000, min=5)
 #pars
 
 lorentz3 = LorentzianModel(prefix='l3_') # G' peak
 pars.update(lorentz3.make_params())
-pars['l3_center'].set(value=1605, min=1590, max=1620)
-pars['l3_sigma'].set(value=8, min=5, max=100)
-pars['l3_amplitude'].set(value=1000, min=5)
+pars['l3_center'].set(value=1606, min=1598, max=1630)
+pars['l3_sigma'].set(value=6, min=2, max=40)
+pars['l3_amplitude'].set(value=20, min=2, max=1500)
 #pars
 
 lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
 pars.update(lorentz4.make_params())
-pars['l4_center'].set(value=1500, min=1440, max=1520)
-pars['l4_sigma'].set(value=10, min=5, max=100)
-pars['l4_amplitude'].set(value=100, min=2, max=5000)
+pars['l4_center'].set(value=1480, min=1440, max=1520)
+pars['l4_sigma'].set(value=6, min=3, max=100)
+pars['l4_amplitude'].set(value=200, min=2, max=2000)
 
 mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
 init = mod.eval(pars, x=xDG)
@@ -216,13 +217,14 @@ with open(DATAFOLDER+"/"+OUTCSVFILE, "w") as f:
 #def convert_df(df):
     # IMPORTANT: Cache the conversion to prevent computation on every rerun
 #    return df.to_csv().encode("utf-8")
-
+timestr = LMFIT_TIME.strftime("%Y%m%d_%H%M")
+DLCSVFILE = os.path.splitext(BASENAME)[0] + "_" + timestr + ".csv"
 #csv = convert_df(f)
 with open(DATAFOLDER+"/"+OUTCSVFILE, "rb") as f:
     btn = st.download_button(
             label="Download results as CSV",
             data=f,
-            file_name=DATAFOLDER+"/"+OUTCSVFILE,
+            file_name=DATAFOLDER+"/"+DLCSVFILE,
             mime="text/csv",
           )
 
