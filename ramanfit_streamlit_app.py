@@ -32,6 +32,9 @@ st.title('Raman fit with lmfit')
 
 uploaded_file = st.file_uploader("Choose a Raman CSV file which holds 1000 - 2000 cm-1 data.")
 
+if uploaded_file is None:
+    st.write("Click Browse files button to upload file")
+
 if not os.path.exists('data'):
     os.mkdir('data')
 
@@ -51,7 +54,8 @@ if uploaded_file:
     try:
         data = np.loadtxt(uploaded_file, delimiter='\t')
         st.write("Data loaded.")
-        if data is not None and st.button("Analyze"):
+        analyze_button = st.button("Analyze")
+        if data is not None and analyze_button:
             try:
                 x = data[:,0]
                 y = data[:,1]
@@ -61,6 +65,8 @@ if uploaded_file:
         st.error(f"Error loading data: {e}")
         data = None
 
+if analyze_button is None:
+    st.write("Click Analyze button to start analysis.")
 
 fig, ax = plt.subplots()
 plt.plot(x,y)
