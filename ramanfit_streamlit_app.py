@@ -158,7 +158,6 @@ if analyze_button is not None:
     #st.show()
     st.pyplot(fig)
 
-
 if analyze_button is not None:
     for parname, param in out.params.items():
         print("%s = %f +/- %f " % (parname, param.value, param.stderr))
