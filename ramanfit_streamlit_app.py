@@ -18,8 +18,13 @@ import sys
 import os
 import streamlit as st    
 import matplotlib.pyplot as plt
+#plt.rcParams['xtick.direction'] = 'in'
+#plt.rcParams['ytick.direction'] = 'in'
 import numpy as np
 
+from lmfit import Model
+from lmfit.lineshapes import lorentzian
+from lmfit.models import LinearModel, LorentzianModel
 
 st.title('Raman fit with lmfit')
 
@@ -33,23 +38,24 @@ if uploaded_file:
     OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
     try:
         data = np.loadtxt(uploaded_file, delimiter='\t')
+        st.write("Data loaded.")
+        if data is not None and st.button("Analyze"):
+            try:
+                x = data[:,0]
+                y = data[:,1]
+            except IndexError as e:
+                st.error(f"Data format error: {e}")
+
+        
     except Exception as e:
         st.error(f"Error loading data: {e}")
         data = None
 
-from lmfit import Model
-from lmfit.lineshapes import lorentzian
-from lmfit.models import LinearModel, LorentzianModel
-
-if data is not None:
-    try:
-        x = data[:,0]
-        y = data[:,0]
-    except IndexError as e:
-        st.error(f"Data format error: {e}")
-
-#print(data)
-
+fig = plt.figure()
+plt.plot(x,y)
+plt.xlabel("Raman shift [cm-1]")
+plt.ylabel("Intensity[cps]")
+st.pyplot(fig)
 #plt.plot(x,y);plt.show()
 
 xDGindex1000=np.searchsorted(x,1000)
@@ -58,8 +64,11 @@ xDGindex2000=np.searchsorted(x,2000)
 xDG = data[xDGindex1000:xDGindex2000,0]
 yDG = data[xDGindex1000:xDGindex2000,1]
 
-fig = plt.figure()
+fig, ax = plt.subplots()
 plt.plot(xDG,yDG)
+ax.set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
+ax.minorticks_on()
+ax.xaxis.set_tick_params(which='minor', bottom=True)
 st.pyplot(fig)
 
 # LMFIT
@@ -121,6 +130,11 @@ ax[2].plot(xDG, comps['l3_']+comps['lin_'], 'C4--', label='Lorentzian compo. 3')
 ax[2].fill_between(xDG, comps['l3_']+comps['lin_'], comps['lin_'],facecolor='C4',alpha=0.3)
 ax[2].plot(xDG, comps['l4_']+comps['lin_'], 'C5--', label='Lorentzian compo. 4')
 ax[2].fill_between(xDG, comps['l4_']+comps['lin_'], comps['lin_'],facecolor='C5',alpha=0.3)
+
+ax[0].minorticks_on()
+ax[1].minorticks_on()
+ax[2].minorticks_on()
+#ax[2].xaxis.set_tick_params(which='minor', bottom=True)
 
 ax[0].set(xlabel="",ylabel="Residual [cps]")
 ax[1].set(xlabel="",ylabel="Intensity [cps]")
