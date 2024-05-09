@@ -16,6 +16,8 @@
 
 import sys
 import os
+from datetime import datetime
+
 import streamlit as st    
 import matplotlib.pyplot as plt
 #plt.rcParams['xtick.direction'] = 'in'
@@ -83,6 +85,8 @@ yDG = data[xDGindex1000:xDGindex2000,1]
 #st.pyplot(fig)
 
 # LMFIT
+
+LMFIT_TIME = datetime.now() # Make a time stamp of processing
 
 bg = LinearModel(prefix='lin_')
 pars = bg.guess(yDG, x=xDG)
@@ -169,6 +173,10 @@ print("##############################################")
 print("FILE:\t", INFILE)
 st.write("FILE:\t", INFILE)
 
+print("Processed (UTC):\t", LMFIT_TIME)
+st.write("Processed (UTC):\t", LMFIT_TIME)
+
+
 l2_area = np.pi * vd['l2_amplitude'] * vd['l2_fwhm']
 l1_area = np.pi * vd['l1_amplitude'] * vd['l1_fwhm']
 GDAreaRatio = l2_area / l1_area
@@ -187,17 +195,36 @@ GDHeightRatioMin = (l2_height - l2_height_stderr) / (l1_height + l1_height_stder
 GDHeightRatioPlus = GDHeightRatioMax - GDHeightRatio
 GDHeightRatioMinus = GDHeightRatio - GDHeightRatioMin
 
+
 print("G/D Height Ratio:\t",  GDHeightRatio, "+/-", GDHeightRatioPlus)
 st.write("G/D Height Ratio:\t",  GDHeightRatio, "+/-", GDHeightRatioPlus)
 print("G/D Area ratio:\t", GDAreaRatio)
 st.write("G/D Area ratio:\t", GDAreaRatio)
 
+
+
 with open(DATAFOLDER+"/"+OUTCSVFILE, "w") as f:
     print("FILE:\t", INFILE, file=f)
+    print("Processed (UTC):\t", LMFIT_TIME, file=f)   
     print("G/D Height ratio:\t", GDHeightRatio, file=f)
     print("G/D Area ratio:\t", GDAreaRatio, file=f)
     print("\n", file=f)
     print(out.fit_report(), file=f)
+    
+    
+#@st.cache_data
+#def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+#    return df.to_csv().encode("utf-8")
+
+#csv = convert_df(f)
+with open(DATAFOLDER+"/"+OUTCSVFILE, "rb") as f:
+    btn = st.download_button(
+            label="Download results as CSV",
+            data=f,
+            file_name=DATAFOLDER+"/"+OUTCSVFILE,
+            mime="text/csv",
+          )
 
     
 
