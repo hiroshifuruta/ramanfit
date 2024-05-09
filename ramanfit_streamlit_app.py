@@ -91,22 +91,22 @@ lorentz2 = LorentzianModel(prefix='l2_')  # G peak
 pars.update(lorentz2.make_params())
 
 pars['l2_center'].set(value=1550, min=1500, max=1590)
-pars['l2_sigma'].set(value=23, min=5)
+pars['l2_sigma'].set(value=15, min=3)
 pars['l2_amplitude'].set(value=15000, min=5)
 #pars
 
 lorentz3 = LorentzianModel(prefix='l3_') # G' peak
 pars.update(lorentz3.make_params())
-pars['l3_center'].set(value=1603, min=1595, max=1620)
+pars['l3_center'].set(value=1603, min=1590, max=1620)
 pars['l3_sigma'].set(value=10, min=5, max=100)
 pars['l3_amplitude'].set(value=1000, min=5)
 #pars
 
 lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
 pars.update(lorentz4.make_params())
-pars['l4_center'].set(value=1500, min=1450, max=1520)
+pars['l4_center'].set(value=1500, min=1440, max=1520)
 pars['l4_sigma'].set(value=10, min=5, max=100)
-pars['l4_amplitude'].set(value=100, min=5, max=500)
+pars['l4_amplitude'].set(value=100, min=2, max=5000)
 
 mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
 init = mod.eval(pars, x=xDG)
