@@ -56,9 +56,7 @@ if uploaded_file:
                 x = data[:,0]
                 y = data[:,1]
             except IndexError as e:
-                st.error(f"Data format error: {e}")
-
-        
+                st.error(f"Data format error: {e}")      
     except Exception as e:
         st.error(f"Error loading data: {e}")
         data = None
