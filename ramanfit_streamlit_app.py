@@ -51,12 +51,14 @@ if uploaded_file:
         st.error(f"Error loading data: {e}")
         data = None
 
-fig = plt.figure()
+
+fig, ax = plt.subplots()
 plt.plot(x,y)
-plt.xlabel("Raman shift [cm-1]")
-plt.ylabel("Intensity[cps]")
+ax.set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
+ax.minorticks_on()
+ax.xaxis.set_tick_params(which='minor', bottom=True)
 st.pyplot(fig)
-#plt.plot(x,y);plt.show()
+
 
 xDGindex1000=np.searchsorted(x,1000)
 xDGindex2000=np.searchsorted(x,2000)
@@ -64,12 +66,12 @@ xDGindex2000=np.searchsorted(x,2000)
 xDG = data[xDGindex1000:xDGindex2000,0]
 yDG = data[xDGindex1000:xDGindex2000,1]
 
-fig, ax = plt.subplots()
-plt.plot(xDG,yDG)
-ax.set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
-ax.minorticks_on()
-ax.xaxis.set_tick_params(which='minor', bottom=True)
-st.pyplot(fig)
+#fig, ax = plt.subplots()
+#plt.plot(xDG,yDG)
+#ax.set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
+#ax.minorticks_on()
+#ax.xaxis.set_tick_params(which='minor', bottom=True)
+#st.pyplot(fig)
 
 # LMFIT
 
