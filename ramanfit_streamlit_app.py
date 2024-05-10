@@ -53,7 +53,7 @@ xDGindex2000=np.searchsorted(x,2000)
 xDG = data[xDGindex1000:xDGindex2000,0]
 yDG = data[xDGindex1000:xDGindex2000,1]
 
-#plt.plot(xDG,yDG);plt.show()
+st.plot(xDG,yDG);st.show()
 
 # LMFIT
 
