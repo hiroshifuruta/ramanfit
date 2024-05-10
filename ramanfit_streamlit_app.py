@@ -114,7 +114,7 @@ if st.button("Analyze"):
     lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
     pars.update(lorentz4.make_params())
     pars['l4_center'].set(value=1480, min=1440, max=1520)
-    pars['l4_sigma'].set(value=6, min=3, max=100)
+    pars['l4_sigma'].set(value=6, min=2, max=100)
     pars['l4_amplitude'].set(value=200, min=2, max=2000)
 
     mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
@@ -170,7 +170,6 @@ if analyze_button is not None:
     print("Processed (UTC):\t", LMFIT_TIME)
     st.write("Processed (UTC):\t", LMFIT_TIME)
 
-
     l2_area = np.pi * vd['l2_amplitude'] * vd['l2_fwhm']
     l1_area = np.pi * vd['l1_amplitude'] * vd['l1_fwhm']
     GDAreaRatio = l2_area / l1_area
@@ -189,13 +188,10 @@ if analyze_button is not None:
     GDHeightRatioPlus = GDHeightRatioMax - GDHeightRatio
     GDHeightRatioMinus = GDHeightRatio - GDHeightRatioMin
 
-
     print("G/D Height Ratio:\t",  GDHeightRatio, "+/-", GDHeightRatioPlus)
     st.write("G/D Height Ratio:\t",  GDHeightRatio, "+/-", GDHeightRatioPlus)
     print("G/D Area ratio:\t", GDAreaRatio)
     st.write("G/D Area ratio:\t", GDAreaRatio)
-
-
 
     with open(DATAFOLDER+"/"+OUTCSVFILE, "w") as f:
         print("FILE:\t", INFILE, file=f)
