@@ -114,7 +114,7 @@ if st.button("Analyze"):
     lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
     pars.update(lorentz4.make_params())
     pars['l4_center'].set(value=1480, min=1440, max=1520)
-    pars['l4_sigma'].set(value=6, min=2, max=100)
+    pars['l4_sigma'].set(value=6, min=1, max=100)
     pars['l4_amplitude'].set(value=200, min=2, max=2000)
 
     mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
