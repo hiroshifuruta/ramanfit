@@ -46,12 +46,6 @@ if uploaded_file is not None:
     DATAFOLDER = "data"
     OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
     OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
-    
-    print(INFILE)
-    #print(BASENAME)
-    #print(DATAFOLDER)
-    #print(OUTPNGFILE)
-    #print(OUTCSVFILE) 
  
     try:
         data = np.loadtxt(uploaded_file, delimiter='\t')
@@ -80,8 +74,6 @@ if uploaded_file is not None:
 
     xDG = data[xDGindex1000:xDGindex2000,0]
     yDG = data[xDGindex1000:xDGindex2000,1]
-#if data is not None and analyze_button is None:
-#    st.write("Click Analyze button to start analysis.")
 
 analyze_button = None
 
@@ -108,8 +100,8 @@ if st.button("Analyze"):
     lorentz3 = LorentzianModel(prefix='l3_') # G' peak
     pars.update(lorentz3.make_params())
     pars['l3_center'].set(value=1615, min=1600, max=1630)
-    pars['l3_sigma'].set(value=3, min=2, max=160)
-    pars['l3_amplitude'].set(value=20, min=2, max=4000)
+    pars['l3_sigma'].set(value=6, min=2, max=160)
+    pars['l3_amplitude'].set(value=30, min=2, max=4000)
 
     lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
     pars.update(lorentz4.make_params())
