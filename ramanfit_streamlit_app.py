@@ -83,8 +83,6 @@ if uploaded_file is not None:
 #if data is not None and analyze_button is None:
 #    st.write("Click Analyze button to start analysis.")
 
-
-
 analyze_button = None
 
 if st.button("Analyze"):
