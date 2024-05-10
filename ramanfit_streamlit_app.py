@@ -108,14 +108,14 @@ if st.button("Analyze"):
     lorentz3 = LorentzianModel(prefix='l3_') # G' peak
     pars.update(lorentz3.make_params())
     pars['l3_center'].set(value=1615, min=1600, max=1630)
-    pars['l3_sigma'].set(value=3, min=2, max=20)
-    pars['l3_amplitude'].set(value=20, min=2, max=1000)
+    pars['l3_sigma'].set(value=3, min=2, max=160)
+    pars['l3_amplitude'].set(value=20, min=2, max=4000)
 
     lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
     pars.update(lorentz4.make_params())
     pars['l4_center'].set(value=1480, min=1440, max=1520)
-    pars['l4_sigma'].set(value=6, min=1, max=100)
-    pars['l4_amplitude'].set(value=200, min=2, max=2000)
+    pars['l4_sigma'].set(value=6, min=1, max=150)
+    pars['l4_amplitude'].set(value=200, min=2, max=6000)
 
     mod = lorentz1 + lorentz2 + lorentz3 + lorentz4 + bg
     init = mod.eval(pars, x=xDG)
