@@ -72,8 +72,12 @@ if uploaded_file is not None:
     xDGindex1000=np.searchsorted(x,1000)
     xDGindex2000=np.searchsorted(x,2000)
 
-    xDG = data[xDGindex1000:xDGindex2000,0]
-    yDG = data[xDGindex1000:xDGindex2000,1]
+    if data is not None:  # Check if data is not None
+        xDG = data[xDGindex1000:xDGindex2000,0]
+        yDG = data[xDGindex1000:xDGindex2000,1]
+    else:
+        xDG = []
+        yDG = []
 
 analyze_button = None
 
@@ -124,14 +128,14 @@ if st.button("Analyze"):
     ax[2].plot(xDG, yDG, 'C1.')
 
     comps = out.eval_components(x=xDG)
-    ax[2].plot(xDG, comps['l1_']+comps['lin_'], 'C2--', label='Lorentzian compo. 1')
-    ax[2].fill_between(xDG, comps['l1_']+comps['lin_'], comps['lin_'],facecolor='C2',alpha=0.3)
-    ax[2].plot(xDG, comps['l2_']+comps['lin_'], 'C3--', label='Lorentzian compo. 2')
-    ax[2].fill_between(xDG, comps['l2_']+comps['lin_'], comps['lin_'],facecolor='C3',alpha=0.3)
-    ax[2].plot(xDG, comps['l3_']+comps['lin_'], 'C4--', label='Lorentzian compo. 3')
-    ax[2].fill_between(xDG, comps['l3_']+comps['lin_'], comps['lin_'],facecolor='C4',alpha=0.3)
-    ax[2].plot(xDG, comps['l4_']+comps['lin_'], 'C5--', label='Lorentzian compo. 4')
-    ax[2].fill_between(xDG, comps['l4_']+comps['lin_'], comps['lin_'],facecolor='C5',alpha=0.3)
+    ax[2].plot(xDG, np.array(comps['l1_'])+np.array(comps['lin_']), 'C2--', label='Lorentzian compo. 1')
+    ax[2].fill_between(xDG, np.array(comps['l1_'])+np.array(comps['lin_']), np.array(comps['lin_']),facecolor='C2',alpha=0.3)
+    ax[2].plot(xDG, np.array(comps['l2_'])+np.array(comps['lin_']), 'C3--', label='Lorentzian compo. 2')
+    ax[2].fill_between(xDG, np.array(comps['l2_'])+np.array(comps['lin_']), np.array(comps['lin_']),facecolor='C3',alpha=0.3)
+    ax[2].plot(xDG, np.array(comps['l3_'])+np.array(comps['lin_']), 'C4--', label='Lorentzian compo. 3')
+    ax[2].fill_between(xDG, np.array(comps['l3_'])+np.array(comps['lin_']), np.array(comps['lin_']),facecolor='C4',alpha=0.3)
+    ax[2].plot(xDG, np.array(comps['l4_'])+np.array(comps['lin_']), 'C5--', label='Lorentzian compo. 4')
+    ax[2].fill_between(xDG, np.array(comps['l4_'])+np.array(comps['lin_']), np.array(comps['lin_']),facecolor='C5',alpha=0.3)
 
     ax[0].minorticks_on()
     ax[1].minorticks_on()
@@ -144,7 +148,7 @@ if st.button("Analyze"):
     ax[1].legend(loc='best', fontsize='x-small')
     ax[2].legend(loc='best', fontsize='x-small')
 
-    plt.savefig(DATAFOLDER+"/"+OUTPNGFILE,dpi=130)
+    plt.savefig(str(DATAFOLDER)+"/"+str(OUTPNGFILE),dpi=130)
     #st.show()
     st.pyplot(fig)
 
@@ -185,7 +189,7 @@ if analyze_button is not None:
     print("G/D Area ratio:\t", GDAreaRatio)
     st.write("G/D Area ratio:\t", GDAreaRatio)
 
-    with open(DATAFOLDER+"/"+OUTCSVFILE, "w") as f:
+    with open(str(DATAFOLDER)+"/"+str(OUTCSVFILE), "w") as f:
         print("FILE:\t", INFILE, file=f)
         print("Processed (UTC):\t", LMFIT_TIME, file=f)   
         print("G/D Height ratio:\t", GDHeightRatio, file=f)
@@ -202,11 +206,11 @@ if analyze_button is not None:
     timestr = LMFIT_TIME.strftime("%Y%m%d_%H%M")
     DLCSVFILE = os.path.splitext(BASENAME)[0] + "_" + timestr + ".csv"
     #csv = convert_df(f)
-    with open(DATAFOLDER+"/"+OUTCSVFILE, "rb") as f:
+    with open(str(DATAFOLDER)+"/"+str(OUTCSVFILE), "rb") as f:
         btn = st.download_button(
                 label="Download results as CSV",
                 data=f,
-                file_name=DATAFOLDER+"/"+DLCSVFILE,
+                file_name=str(DATAFOLDER)+"/"+str(DLCSVFILE),
                 mime="text/csv",
             )
 
