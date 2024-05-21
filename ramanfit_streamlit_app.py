@@ -97,17 +97,18 @@ if st.button("Analyze"):
 
     lorentz2 = LorentzianModel(prefix='l2_')  # G peak
     pars.update(lorentz2.make_params())
-    pars['l2_center'].set(value=1550, min=1500, max=1590)
+    pars['l2_center'].set(value=1570, min=1550, max=1590)
     pars['l2_sigma'].set(value=15, min=3)
     pars['l2_amplitude'].set(value=20000, min=5)
 
     lorentz3 = LorentzianModel(prefix='l3_') # G' peak
     pars.update(lorentz3.make_params())
     pars['l3_center'].set(value=1615, min=1604, max=1630)
-    pars['l3_sigma'].set(value=6, min=2, max=160)
+    pars['l3_sigma'].set(value=16, min=2, max=120)
 #    pars['l3_amplitude'].set(value=30, min=2, max=4000)
+    l3_amplitude_min = 0.01 * pars['l2_amplitude'].value
     l3_amplitude_max = 0.1 * pars['l2_amplitude'].value
-    pars['l3_amplitude'].set(value=30, min=2, max=l3_amplitude_max)
+    pars['l3_amplitude'].set(value=30, min=l3_amplitude_min, max=l3_amplitude_max)
 
     lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
     pars.update(lorentz4.make_params())
