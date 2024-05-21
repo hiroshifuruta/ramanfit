@@ -72,8 +72,12 @@ if uploaded_file is not None:
     xDGindex1000=np.searchsorted(x,1000)
     xDGindex2000=np.searchsorted(x,2000)
 
-    xDG = data[xDGindex1000:xDGindex2000,0]
-    yDG = data[xDGindex1000:xDGindex2000,1]
+    if data is not None:  # Check if data is not None
+        xDG = data[xDGindex1000:xDGindex2000,0]
+        yDG = data[xDGindex1000:xDGindex2000,1]
+    else:
+        xDG = []
+        yDG = []
 
 analyze_button = None
 
@@ -87,25 +91,28 @@ if st.button("Analyze"):
 
     lorentz1 = LorentzianModel(prefix='l1_')  # D peak
     pars.update(lorentz1.make_params())
-    pars['l1_center'].set(value=1336, min=1300, max=1380)
+    pars['l1_center'].set(value=1340, min=1320, max=1380)
     pars['l1_sigma'].set(value=10, min=5)
-    pars['l1_amplitude'].set(value=10000, min=5)
+    pars['l1_amplitude'].set(value=5000, min=5)
 
     lorentz2 = LorentzianModel(prefix='l2_')  # G peak
     pars.update(lorentz2.make_params())
-    pars['l2_center'].set(value=1550, min=1500, max=1590)
+    pars['l2_center'].set(value=1575, min=1570, max=1590)
     pars['l2_sigma'].set(value=15, min=3)
-    pars['l2_amplitude'].set(value=20000, min=5)
+    pars['l2_amplitude'].set(value=7000, min=5)
 
     lorentz3 = LorentzianModel(prefix='l3_') # G' peak
     pars.update(lorentz3.make_params())
-    pars['l3_center'].set(value=1615, min=1600, max=1630)
-    pars['l3_sigma'].set(value=6, min=2, max=160)
-    pars['l3_amplitude'].set(value=30, min=2, max=4000)
+    pars['l3_center'].set(value=1615, min=1604, max=1630)
+    pars['l3_sigma'].set(value=16, min=2, max=120)
+#    pars['l3_amplitude'].set(value=30, min=2, max=4000)
+    l3_amplitude_min = 0.025 * pars['l2_amplitude'].value
+    l3_amplitude_max = 0.1 * pars['l2_amplitude'].value
+    pars['l3_amplitude'].set(value=30, min=l3_amplitude_min, max=l3_amplitude_max)
 
     lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
     pars.update(lorentz4.make_params())
-    pars['l4_center'].set(value=1480, min=1440, max=1520)
+    pars['l4_center'].set(value=1480, min=1450, max=1520)
     pars['l4_sigma'].set(value=6, min=1, max=150)
     pars['l4_amplitude'].set(value=200, min=2, max=6000)
 
@@ -124,14 +131,14 @@ if st.button("Analyze"):
     ax[2].plot(xDG, yDG, 'C1.')
 
     comps = out.eval_components(x=xDG)
-    ax[2].plot(xDG, comps['l1_']+comps['lin_'], 'C2--', label='Lorentzian compo. 1')
-    ax[2].fill_between(xDG, comps['l1_']+comps['lin_'], comps['lin_'],facecolor='C2',alpha=0.3)
-    ax[2].plot(xDG, comps['l2_']+comps['lin_'], 'C3--', label='Lorentzian compo. 2')
-    ax[2].fill_between(xDG, comps['l2_']+comps['lin_'], comps['lin_'],facecolor='C3',alpha=0.3)
-    ax[2].plot(xDG, comps['l3_']+comps['lin_'], 'C4--', label='Lorentzian compo. 3')
-    ax[2].fill_between(xDG, comps['l3_']+comps['lin_'], comps['lin_'],facecolor='C4',alpha=0.3)
-    ax[2].plot(xDG, comps['l4_']+comps['lin_'], 'C5--', label='Lorentzian compo. 4')
-    ax[2].fill_between(xDG, comps['l4_']+comps['lin_'], comps['lin_'],facecolor='C5',alpha=0.3)
+    ax[2].plot(xDG, np.array(comps['l1_'])+np.array(comps['lin_']), 'C2--', label='Lorentzian compo. 1')
+    ax[2].fill_between(xDG, np.array(comps['l1_'])+np.array(comps['lin_']), np.array(comps['lin_']),facecolor='C2',alpha=0.3)
+    ax[2].plot(xDG, np.array(comps['l2_'])+np.array(comps['lin_']), 'C3--', label='Lorentzian compo. 2')
+    ax[2].fill_between(xDG, np.array(comps['l2_'])+np.array(comps['lin_']), np.array(comps['lin_']),facecolor='C3',alpha=0.3)
+    ax[2].plot(xDG, np.array(comps['l3_'])+np.array(comps['lin_']), 'C4--', label='Lorentzian compo. 3')
+    ax[2].fill_between(xDG, np.array(comps['l3_'])+np.array(comps['lin_']), np.array(comps['lin_']),facecolor='C4',alpha=0.3)
+    ax[2].plot(xDG, np.array(comps['l4_'])+np.array(comps['lin_']), 'C5--', label='Lorentzian compo. 4')
+    ax[2].fill_between(xDG, np.array(comps['l4_'])+np.array(comps['lin_']), np.array(comps['lin_']),facecolor='C5',alpha=0.3)
 
     ax[0].minorticks_on()
     ax[1].minorticks_on()
@@ -144,7 +151,7 @@ if st.button("Analyze"):
     ax[1].legend(loc='best', fontsize='x-small')
     ax[2].legend(loc='best', fontsize='x-small')
 
-    plt.savefig(DATAFOLDER+"/"+OUTPNGFILE,dpi=130)
+    plt.savefig(str(DATAFOLDER)+"/"+str(OUTPNGFILE),dpi=130)
     #st.show()
     st.pyplot(fig)
 
@@ -185,7 +192,7 @@ if analyze_button is not None:
     print("G/D Area ratio:\t", GDAreaRatio)
     st.write("G/D Area ratio:\t", GDAreaRatio)
 
-    with open(DATAFOLDER+"/"+OUTCSVFILE, "w") as f:
+    with open(str(DATAFOLDER)+"/"+str(OUTCSVFILE), "w") as f:
         print("FILE:\t", INFILE, file=f)
         print("Processed (UTC):\t", LMFIT_TIME, file=f)   
         print("G/D Height ratio:\t", GDHeightRatio, file=f)
@@ -202,11 +209,11 @@ if analyze_button is not None:
     timestr = LMFIT_TIME.strftime("%Y%m%d_%H%M")
     DLCSVFILE = os.path.splitext(BASENAME)[0] + "_" + timestr + ".csv"
     #csv = convert_df(f)
-    with open(DATAFOLDER+"/"+OUTCSVFILE, "rb") as f:
+    with open(str(DATAFOLDER)+"/"+str(OUTCSVFILE), "rb") as f:
         btn = st.download_button(
                 label="Download results as CSV",
                 data=f,
-                file_name=DATAFOLDER+"/"+DLCSVFILE,
+                file_name=str(DATAFOLDER)+"/"+str(DLCSVFILE),
                 mime="text/csv",
             )
 
