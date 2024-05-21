@@ -107,8 +107,8 @@ if st.button("Analyze"):
     pars['l3_sigma'].set(value=60, min=10, max=100)
 #    pars['l3_amplitude'].set(value=30, min=2, max=4000)
     l3_amplitude_min = 0.05 * pars['l2_amplitude'].value
-    l3_amplitude_max = 0.1 * pars['l2_amplitude'].value
-    pars['l3_amplitude'].set(value=100, min=l3_amplitude_min, max=l3_amplitude_max)
+    l3_amplitude_max = 0.12 * pars['l2_amplitude'].value
+    pars['l3_amplitude'].set(value=600, min=l3_amplitude_min, max=l3_amplitude_max)
 
     lorentz4 = LorentzianModel(prefix='l4_') # amorphous peak
     pars.update(lorentz4.make_params())
