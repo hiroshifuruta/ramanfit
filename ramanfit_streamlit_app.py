@@ -98,7 +98,7 @@ if st.button("Analyze"):
     lorentz2 = LorentzianModel(prefix='l2_')  # G peak
     pars.update(lorentz2.make_params())
     pars['l2_center'].set(value=1575, min=1570, max=1590)
-    pars['l2_sigma'].set(value=15, min=3)
+    pars['l2_sigma'].set(value=12, min=3)
     pars['l2_amplitude'].set(value=7000, min=5)
 
     lorentz3 = LorentzianModel(prefix='l3_') # G' peak
