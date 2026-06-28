@@ -49,13 +49,19 @@ def test_rbm_peaks_and_diameters(result):
         assert 0.8 <= pk["diameter_nm"] <= 1.4
 
 
-def test_gband_doublet_ordering(result):
-    g = result["gband"]
-    assert g["r_squared"] > 0.95
+def test_dg_joint_fit(result):
+    g = result["dg"]
+    # joint D + D'' + G-/G+ fit should be excellent and well-determined
+    assert g["r_squared"] > 0.99
+    assert g["D"]["center"] == pytest.approx(1338, abs=8)
+    assert 1450 <= g["Dpp"]["center"] <= 1560          # broad disorder band
     assert g["G_plus"]["center"] == pytest.approx(1592, abs=6)
     # G+ must sit above G- (the ordering bug we explicitly guard against)
     assert g["G_plus"]["center"] > g["G_minus"]["center"]
     assert 1540 <= g["G_minus"]["center"] <= 1585
+    # uncertainties must be finite (railed fits return None)
+    assert g["G_plus"]["center_stderr"] is not None
+    assert g["D"]["center_stderr"] is not None
 
 
 def test_low_defect_quality(result):

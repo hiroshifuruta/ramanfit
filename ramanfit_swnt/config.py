@@ -25,12 +25,13 @@ class SwntConfig:
     rbm_relation: str = "248/w"        # "248/w" (Jorio) or "araujo"
     rbm_min_prominence_frac: float = 0.04  # fraction of (max-baseline)
 
-    # --- G band ---
-    gband_region: Tuple[float, float] = (1500.0, 1650.0)
+    # --- D / G band (fit jointly over the whole D-G region) ---
+    # D, D'' (broad disorder band), G- and G+ are fit simultaneously so the
+    # D-to-G valley is modelled instead of forced onto a straight baseline.
+    dg_region: Tuple[float, float] = (1000.0, 1700.0)
     gminus_lineshape: str = "lorentzian"  # "lorentzian" (semicond.) or "bwf" (metallic)
 
-    # --- D / 2D ---
-    d_region: Tuple[float, float] = (1250.0, 1450.0)
+    # --- 2D ---
     twod_region: Tuple[float, float] = (2500.0, 2800.0)
 
     # --- (n,m) assignment ---

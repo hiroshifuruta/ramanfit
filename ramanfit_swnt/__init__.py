@@ -39,17 +39,19 @@ def analyze_swnt(x, y, config=None):
             diameter_tol=cfg.nm_diameter_tol, energy_window=cfg.nm_energy_window,
             max_n=cfg.nm_max_n)
 
-    # 3. G band (G+/G-, metallic vs semiconducting)
-    gband = swnt.fit_gband(x_cal, y, region=cfg.gband_region,
-                           gminus_lineshape=cfg.gminus_lineshape)
+    # 3. Joint D-G fit (D + D'' + G-/G+ over the whole region)
+    dg = swnt.fit_dg(x_cal, y, region=cfg.dg_region,
+                     gminus_lineshape=cfg.gminus_lineshape)
+    # Backward-compatible views onto the joint fit
+    gband = dg
+    d_band = {"peak": dg["D"], "x": dg["x"], "y": dg["y"]}
 
-    # 4. D and 2D bands
-    d_band = swnt.fit_d_band(x_cal, y, region=cfg.d_region)
+    # 4. 2D band
     twod_band = swnt.fit_2d_band(x_cal, y, region=cfg.twod_region)
 
     # 5. Quality metrics
-    gp_height = gband["G_plus"]["height"]
-    d_height = d_band["peak"]["height"] if d_band["peak"] else None
+    gp_height = dg["G_plus"]["height"]
+    d_height = dg["D"]["height"]
     twod_peak = twod_band["peak"]
     quality = {
         "ID_IG": (d_height / gp_height) if (d_height and gp_height) else None,
@@ -57,5 +59,6 @@ def analyze_swnt(x, y, config=None):
         "I2D_IG": (twod_peak["height"] / gp_height) if (twod_peak and gp_height) else None,
     }
 
-    return {"calibration": cal, "rbm": rbm, "gband": gband, "d_band": d_band,
-            "twod_band": twod_band, "quality": quality, "config": cfg}
+    return {"calibration": cal, "rbm": rbm, "dg": dg, "gband": gband,
+            "d_band": d_band, "twod_band": twod_band, "quality": quality,
+            "config": cfg}

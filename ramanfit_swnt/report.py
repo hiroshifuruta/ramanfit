@@ -31,28 +31,30 @@ def plot_analysis(results, ax=None):
                          (pk["center"], 0), fontsize=7, ha="center", va="bottom")
     ax0.set_title("RBM -> diameter"); ax0.set_xlabel("Raman shift [cm$^{-1}$]")
 
-    # --- D band ---
+    # --- D-G region (joint fit) ---
     ax1 = axes[1]
-    d = results["d_band"]
-    ax1.plot(d["x"], d["y"], "C1.", ms=2, alpha=0.4)
-    if d["peak"] is not None:
-        ax1.axvline(d["peak"]["center"], color="C2", ls="--", lw=1)
-    ax1.set_title("D band"); ax1.set_xlabel("Raman shift [cm$^{-1}$]")
-
-    # --- G band ---
-    ax2 = axes[2]
-    g = results["gband"]
+    g = results["dg"]
     out = g["result"]
     xg, yg = g["x"], g["y"]
     comps = out.eval_components(x=xg)
-    ax2.plot(xg, yg, "C1.", ms=2, alpha=0.4)
-    ax2.plot(xg, out.best_fit, "k-", lw=1.5)
     lin = comps.get("lin_", np.zeros_like(xg))
-    for key, col, lab in [("gp_", "C3", "G+"), ("gm_", "C0", "G-")]:
+    ax1.plot(xg, yg, "C1.", ms=2, alpha=0.4)
+    ax1.plot(xg, out.best_fit, "k-", lw=1.5)
+    for key, col, lab in [("d_", "C2", "D"), ("dpp_", "C5", "D''"),
+                          ("gm_", "C0", "G-"), ("gp_", "C3", "G+")]:
         if key in comps:
-            ax2.fill_between(xg, comps[key] + lin, lin, alpha=0.3, color=col, label=lab)
+            ax1.fill_between(xg, comps[key] + lin, lin, alpha=0.3, color=col, label=lab)
     verdict = "metallic" if g.get("metallic") else "semiconducting"
-    ax2.legend(); ax2.set_title(f"G band ({verdict})"); ax2.set_xlabel("Raman shift [cm$^{-1}$]")
+    ax1.legend(fontsize=8)
+    ax1.set_title(f"D-G region ({verdict}, R²={g['r_squared']:.4f})")
+    ax1.set_xlabel("Raman shift [cm$^{-1}$]")
+
+    # --- D-G residual ---
+    ax2 = axes[2]
+    ax2.plot(xg, out.best_fit - yg, "C3-", lw=0.8, alpha=0.7)
+    ax2.axhline(0, color="k", lw=0.5)
+    ax2.set_title("D-G fit residual"); ax2.set_xlabel("Raman shift [cm$^{-1}$]")
+    ax2.set_ylabel("fit − data")
 
     # --- 2D band ---
     ax3 = axes[3]
@@ -82,8 +84,11 @@ def summary_text(results):
         nm_s = ", ".join(f"({c['n']},{c['m']}){c['type']}" for c in nm[:3]) or "-"
         L.append(f"  {pk['center']:7.1f} cm-1  d={pk['diameter_nm']:.2f} nm   {nm_s}")
 
-    g = results["gband"]
-    L.append(f"\nG band: G+ {g['G_plus']['center']:.1f}, G- {g['G_minus']['center']:.1f} "
+    g = results["dg"]
+    L.append(f"\nD-G joint fit (R²={g['r_squared']:.4f}):")
+    L.append(f"  D   {g['D']['center']:.1f} cm-1 (FWHM {g['D']['fwhm']:.0f})")
+    L.append(f"  D'' {g['Dpp']['center']:.1f} cm-1 (FWHM {g['Dpp']['fwhm']:.0f}, broad disorder band)")
+    L.append(f"  G+  {g['G_plus']['center']:.1f}, G- {g['G_minus']['center']:.1f} "
              f"(split {g['splitting']:.1f} cm-1) -> "
              f"{'metallic' if g['metallic'] else 'semiconducting'}")
 
