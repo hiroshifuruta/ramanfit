@@ -33,4 +33,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        # Don't fail the build when no tests are collected (pytest exit code 5)
+        pytest || ([ $? -eq 5 ] && echo "No tests collected - skipping")

@@ -129,5 +129,8 @@ dmypy.json
 .pyre/
 
 
-# data folder is ignored to sync
-data/
+# top-level data folder is ignored to sync (does not affect packaged data dirs)
+/data/
+
+# generated analysis summaries
+swnt_summary.txt

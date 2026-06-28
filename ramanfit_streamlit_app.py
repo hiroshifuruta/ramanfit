@@ -28,7 +28,72 @@ from lmfit import Model
 from lmfit.lineshapes import lorentzian
 from lmfit.models import LinearModel, LorentzianModel
 
+from ramanfit_swnt import load_spectrum, analyze_swnt, SwntConfig
+from ramanfit_swnt.report import plot_analysis, summary_text
+
 st.title('Raman fit with lmfit')
+
+mode = st.sidebar.radio(
+    "Analysis mode",
+    ["D/G carbon (Lorentzian)", "SWNT (RBM + G± + Si calibration)"],
+)
+
+
+def swnt_section():
+    st.header("SWNT analysis")
+    st.caption("RBM → diameter, G⁺/G⁻, D/G & 2D, candidate (n,m), "
+               "with Si-peak shift calibration.")
+    up = st.file_uploader("Upload a full-range SWNT spectrum (incl. RBM ~150-350 "
+                          "and ideally the Si 520.7 cm⁻¹ line).", key="swnt")
+    c1, c2, c3 = st.columns(3)
+    laser = c1.selectbox("Laser (nm)", [532.0, 633.0, 785.0], index=0)
+    si_nominal = c2.number_input("Si nominal (cm⁻¹)", value=520.7, step=0.1)
+    gm_shape = c3.selectbox("G⁻ lineshape", ["lorentzian", "bwf"], index=0,
+                            help="bwf = Breit-Wigner-Fano, for metallic tubes")
+    if up is None:
+        st.info("Upload a spectrum to run the SWNT pipeline.")
+        return
+    x, y = load_spectrum(up)
+    cfg = SwntConfig(laser_nm=laser, si_nominal=si_nominal, gminus_lineshape=gm_shape)
+    res = analyze_swnt(x, y, cfg)
+
+    cal = res["calibration"]
+    if cal["applied"]:
+        st.success(f"Si calibration: observed {cal['si_center']:.2f} cm⁻¹ → "
+                   f"offset {cal['offset']:+.2f} cm⁻¹ applied.")
+    else:
+        st.warning(f"Si calibration not applied: {cal.get('warning', '')}")
+
+    st.pyplot(plot_analysis(res))
+
+    g = res["gband"]; q = res["quality"]
+    m1, m2, m3 = st.columns(3)
+    m1.metric("G⁺ / G⁻ (cm⁻¹)",
+              f"{g['G_plus']['center']:.1f} / {g['G_minus']['center']:.1f}",
+              help="metallic" if g["metallic"] else "semiconducting")
+    m2.metric("I(D)/I(G⁺)", f"{q['ID_IG']:.3f}" if q["ID_IG"] is not None else "n/a")
+    m3.metric("2D (cm⁻¹)",
+              f"{q['twod_center']:.1f}" if q["twod_center"] is not None else "n/a")
+
+    st.subheader("RBM peaks → diameter → candidate (n,m)")
+    rows = []
+    for pk in res["rbm"]["peaks"]:
+        nm = ", ".join(f"({c['n']},{c['m']}){c['type']}"
+                       for c in pk.get("nm_candidates", [])[:3]) or "—"
+        rows.append({"RBM (cm⁻¹)": round(pk["center"], 1),
+                     "diameter (nm)": round(pk["diameter_nm"], 3),
+                     "candidate (n,m)": nm})
+    st.table(rows)
+    st.caption("(n,m) candidates use a first-order tight-binding Kataura model "
+               "and are approximate — see ramanfit_swnt/kataura.py.")
+
+    st.download_button("Download summary (txt)", data=summary_text(res),
+                       file_name="swnt_summary.txt", mime="text/plain")
+
+
+if mode.startswith("SWNT"):
+    swnt_section()
+    st.stop()
 
 uploaded_file = st.file_uploader("Choose a Raman CSV file which holds 1000 - 2000 cm-1 data.")
 
@@ -40,13 +105,17 @@ if not os.path.exists('data'):
 
 
 
+data = None
+x = None
+y = None
+
 if uploaded_file is not None:
     INFILE = uploaded_file.name
     BASENAME = os.path.basename(INFILE)
     DATAFOLDER = "data"
     OUTPNGFILE = os.path.splitext(BASENAME)[0] + ".png"
     OUTCSVFILE = os.path.splitext(BASENAME)[0] + ".csv"
- 
+
     try:
         data = np.loadtxt(uploaded_file, delimiter='\t')
         st.write("Data loaded.")
@@ -56,12 +125,13 @@ if uploaded_file is not None:
                 x = data[:,0]
                 y = data[:,1]
             except IndexError as e:
-                st.error(f"Data format error: {e}")      
+                st.error(f"Data format error: {e}")
+                data = None
     except Exception as e:
         st.error(f"Error loading data: {e}")
         data = None
 
-if uploaded_file is not None:
+if uploaded_file is not None and data is not None and x is not None:
     fig, ax = plt.subplots()
     plt.plot(x,y)
     ax.set(xlabel="Raman shift [cm-1]",ylabel="Intensity[cps]")
@@ -81,7 +151,7 @@ if uploaded_file is not None:
 
 analyze_button = None
 
-if st.button("Analyze"):
+if st.button("Analyze") and data is not None and x is not None:
     analyze_button=1
 # LMFIT
     LMFIT_TIME = datetime.now() # Make a time stamp of processing
