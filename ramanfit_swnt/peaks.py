@@ -5,7 +5,7 @@ stderr / at-bound flag) lives, replacing the copy-pasted blocks scattered across
 the original ``ramanfit.py`` and ``run_*.py`` scripts.
 """
 import numpy as np
-from lmfit.models import LinearModel, LorentzianModel
+from lmfit.models import ConstantModel, LinearModel, LorentzianModel
 
 
 def slice_region(x, y, lo, hi):
@@ -51,17 +51,27 @@ def peak_record(out, prefix, label):
 
 
 def fit_lorentzians(x, y, seeds, sigma0=10.0, sigma_bounds=(2.0, 80.0),
-                    center_window=15.0):
-    """Fit ``len(seeds)`` Lorentzians plus a linear background.
+                    center_window=15.0, background="linear"):
+    """Fit ``len(seeds)`` Lorentzians plus a background.
 
     ``seeds`` is a list of dicts; each may contain ``center`` (required) and
     optional ``prefix``, ``center_min``, ``center_max``, ``sigma``,
     ``sigma_min``, ``sigma_max``, ``amplitude``.
 
+    ``background`` selects the baseline model: ``"linear"`` (default) or
+    ``"constant"``.  A constant baseline is appropriate when a linear slope
+    would be unphysical -- e.g. the RBM region, whose low-frequency edge is
+    clipped by a notch filter below ~200 cm^-1.
+
     Returns ``(lmfit_result, [peak_record, ...])`` with records ordered as the
     seeds were given.
     """
-    bg = LinearModel(prefix="lin_")
+    if background == "constant":
+        bg = ConstantModel(prefix="lin_")
+    elif background == "linear":
+        bg = LinearModel(prefix="lin_")
+    else:
+        raise ValueError(f"Unknown background: {background!r}")
     pars = bg.guess(y, x=x)
     model = bg
     prefixes = []

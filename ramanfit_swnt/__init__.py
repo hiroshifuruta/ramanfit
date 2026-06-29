@@ -32,7 +32,8 @@ def analyze_swnt(x, y, config=None):
 
     # 2. RBM -> diameters -> candidate (n,m)
     rbm = swnt.fit_rbm(x_cal, y, region=cfg.rbm_region, relation=cfg.rbm_relation,
-                       min_prominence_frac=cfg.rbm_min_prominence_frac)
+                       min_prominence_frac=cfg.rbm_min_prominence_frac,
+                       extra_centers=cfg.rbm_extra_centers)
     for pk in rbm["peaks"]:
         pk["nm_candidates"] = kataura.assign_nm(
             pk["center"], cfg.laser_eV, relation=cfg.rbm_relation,

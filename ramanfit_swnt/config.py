@@ -21,9 +21,16 @@ class SwntConfig:
     si_min_prominence: float = 200.0   # min peak prominence to accept a Si line
 
     # --- RBM ---
-    rbm_region: Tuple[float, float] = (100.0, 350.0)
+    # Lower bound starts at 180 (not 100): a notch filter blocks the Rayleigh
+    # line below ~200 cm^-1, so 150-180 is dominated by the filter's transmission
+    # edge.  Excluding that edge leaves a flat background that fit_rbm models with
+    # a *constant* baseline (a linear one would chase the notch slope).
+    rbm_region: Tuple[float, float] = (180.0, 350.0)
     rbm_relation: str = "248/w"        # "248/w" (Jorio) or "araujo"
     rbm_min_prominence_frac: float = 0.04  # fraction of (max-baseline)
+    # Manually-seeded RBM centers (cm^-1) for shoulders the detector misses,
+    # e.g. the ~240 cm^-1 peak hidden on the flank of the 233 line.
+    rbm_extra_centers: Tuple[float, ...] = (240.0,)
 
     # --- D / G band (fit jointly over the whole D-G region) ---
     # D, D'' (broad disorder band), G- and G+ are fit simultaneously so the
