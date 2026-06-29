@@ -59,6 +59,9 @@ def test_dg_joint_fit(result):
     # G+ must sit above G- (the ordering bug we explicitly guard against)
     assert g["G_plus"]["center"] > g["G_minus"]["center"]
     assert 1540 <= g["G_minus"]["center"] <= 1585
+    # D' sits just above G+ and absorbs its upper shoulder
+    assert g["Dprime"]["center"] > g["G_plus"]["center"]
+    assert 1595 <= g["Dprime"]["center"] <= 1630
     # uncertainties must be finite (railed fits return None)
     assert g["G_plus"]["center_stderr"] is not None
     assert g["D"]["center_stderr"] is not None

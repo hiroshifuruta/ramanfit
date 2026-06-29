@@ -81,18 +81,24 @@ def _gminus_record(out):
 
 
 def fit_dg(x, y, region=(1000.0, 1700.0), gminus_lineshape="lorentzian"):
-    """Jointly fit the whole D-G region with four Lorentzians + linear background:
+    """Jointly fit the whole D-G region with five Lorentzians + linear background:
 
     * **D**   (~1340) — defect band
     * **D''** (~1500-1535, broad) — disorder band that fills the D-to-G valley
     * **G-**  (~1567, Lorentzian or BWF) and **G+** (~1592)
+    * **D'**  (~1600-1620) — defect-activated band sitting just above G+
 
     Fitting the region as a whole (default 1000-1700 cm^-1) avoids the railed,
     uncertainty-free fits produced by fitting D and G in separate narrow windows.
     ``center(G+) > center(G-)`` is enforced via non-overlapping bounds.
 
-    Returns a dict with ``D``, ``Dpp``, ``G_plus``, ``G_minus`` records, the
-    ``splitting`` and ``metallic`` verdict, ``r_squared`` and the lmfit result.
+    Without the D' band a single Lorentzian G+ cannot reproduce its upper
+    shoulder, leaving a large oscillating residual across 1550-1630 cm^-1;
+    adding D' roughly halves that residual and sharpens G+ to its true width.
+
+    Returns a dict with ``D``, ``Dpp``, ``G_plus``, ``G_minus``, ``Dprime``
+    records, the ``splitting`` and ``metallic`` verdict, ``r_squared`` and the
+    lmfit result.
     """
     xg, yg = slice_region(x, y, *region)
     bg = LinearModel(prefix="lin_")
@@ -117,7 +123,13 @@ def fit_dg(x, y, region=(1000.0, 1700.0), gminus_lineshape="lorentzian"):
     pars["gp_sigma"].set(value=10, min=3, max=30)
     pars["gp_amplitude"].set(value=max(1.0, ymax * 10), min=1.0)
 
-    model = bg + d + dpp + gp
+    dp = LorentzianModel(prefix="dp_")          # D' : shoulder just above G+
+    pars.update(dp.make_params())
+    pars["dp_center"].set(value=1610, min=1595, max=1630)
+    pars["dp_sigma"].set(value=12, min=4, max=40)
+    pars["dp_amplitude"].set(value=max(1.0, ymax), min=1.0)
+
+    model = bg + d + dpp + gp + dp
     if gminus_lineshape == "bwf":
         gm = BreitWignerModel(prefix="gm_")     # metallic Fano line
         pars.update(gm.make_params())
@@ -142,6 +154,7 @@ def fit_dg(x, y, region=(1000.0, 1700.0), gminus_lineshape="lorentzian"):
         "D": peak_record(out, "d_", "D"),
         "Dpp": peak_record(out, "dpp_", "D''"),
         "G_plus": gp_rec, "G_minus": gm_rec,
+        "Dprime": peak_record(out, "dp_", "D'"),
         "splitting": float(gp_rec["center"] - gm_rec["center"]),
         "metallic": bool(metallic),
     }

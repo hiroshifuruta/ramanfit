@@ -41,7 +41,8 @@ def plot_analysis(results, ax=None):
     ax1.plot(xg, yg, "C1.", ms=2, alpha=0.4)
     ax1.plot(xg, out.best_fit, "k-", lw=1.5)
     for key, col, lab in [("d_", "C2", "D"), ("dpp_", "C5", "D''"),
-                          ("gm_", "C0", "G-"), ("gp_", "C3", "G+")]:
+                          ("gm_", "C0", "G-"), ("gp_", "C3", "G+"),
+                          ("dp_", "C6", "D'")]:
         if key in comps:
             ax1.fill_between(xg, comps[key] + lin, lin, alpha=0.3, color=col, label=lab)
     verdict = "metallic" if g.get("metallic") else "semiconducting"
@@ -91,6 +92,8 @@ def summary_text(results):
     L.append(f"  G+  {g['G_plus']['center']:.1f}, G- {g['G_minus']['center']:.1f} "
              f"(split {g['splitting']:.1f} cm-1) -> "
              f"{'metallic' if g['metallic'] else 'semiconducting'}")
+    if "Dprime" in g:
+        L.append(f"  D'  {g['Dprime']['center']:.1f} cm-1 (FWHM {g['Dprime']['fwhm']:.0f})")
 
     q = results["quality"]
     L.append(f"I(D)/I(G+) = {q['ID_IG']:.3f}" if q['ID_IG'] is not None else "I(D)/I(G+) = n/a")
