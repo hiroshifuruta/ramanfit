@@ -97,6 +97,15 @@ def test_2d_multicomponent(result):
     assert all(b - a > 5 for a, b in zip(centers, centers[1:]))
 
 
+def test_choose_spectrum_file_headless(monkeypatch):
+    # with the dialog disabled, the picker returns the default (notebooks stay
+    # runnable non-interactively)
+    from ramanfit_swnt import choose_spectrum_file
+    monkeypatch.setenv("RAMANFIT_NO_DIALOG", "1")
+    assert choose_spectrum_file(default="data/x.tsv") == "data/x.tsv"
+    assert choose_spectrum_file() is None
+
+
 def test_rbm_diameter_relation_monotonic():
     from ramanfit_swnt.swnt import rbm_to_diameter
     # higher RBM frequency -> smaller diameter

@@ -18,17 +18,25 @@ def rbm_to_diameter(omega, relation="248/w"):
     raise ValueError(f"Unknown RBM relation: {relation!r}")
 
 
-def seed_rbm_centers(x, y, min_prominence_frac=0.04):
-    """Detect candidate RBM peak positions via prominence-based peak finding."""
+def seed_rbm_centers(x, y, min_prominence_frac=0.03):
+    """Detect candidate RBM peak positions via prominence-based peak finding.
+
+    The signal is lightly smoothed first so noise spikes do not inflate the
+    prominence of, or fragment, the real bands.  The prominence threshold scales
+    with the band envelope (``min_prominence_frac`` of max-above-baseline) with a
+    low absolute floor, so weak-signal spectra still yield their shoulder bands
+    instead of collapsing to a few tall peaks.
+    """
     if len(x) < 5:
         return []
     baseline = np.percentile(y, 5)
-    prom = max(20.0, min_prominence_frac * (y.max() - baseline))
-    idx, _ = find_peaks(y, prominence=prom, distance=4)
+    ys = np.convolve(y, np.ones(5) / 5.0, mode="same") if len(y) >= 5 else y
+    prom = max(8.0, min_prominence_frac * (y.max() - baseline))
+    idx, _ = find_peaks(ys, prominence=prom, distance=3)
     return [float(x[i]) for i in idx]
 
 
-def fit_rbm(x, y, region=(180.0, 350.0), relation="248/w", min_prominence_frac=0.04,
+def fit_rbm(x, y, region=(180.0, 350.0), relation="248/w", min_prominence_frac=0.03,
             extra_centers=()):
     """Fit the RBM region with one Lorentzian per detected peak.
 

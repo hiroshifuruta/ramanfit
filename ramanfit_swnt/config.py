@@ -27,10 +27,12 @@ class SwntConfig:
     # a *constant* baseline (a linear one would chase the notch slope).
     rbm_region: Tuple[float, float] = (180.0, 350.0)
     rbm_relation: str = "248/w"        # "248/w" (Jorio) or "araujo"
-    rbm_min_prominence_frac: float = 0.04  # fraction of (max-baseline)
-    # Manually-seeded RBM centers (cm^-1) for shoulders the detector misses,
-    # e.g. the ~240 cm^-1 peak hidden on the flank of the 233 line.
-    rbm_extra_centers: Tuple[float, ...] = (240.0,)
+    rbm_min_prominence_frac: float = 0.03  # fraction of (max-baseline)
+    # Manually-seeded RBM centers (cm^-1) for shoulders the detector still
+    # misses on a given sample.  Empty by default -- the smoothed, low-floor
+    # detector now resolves the shoulder bands on its own; add entries only for
+    # a specific spectrum that needs them.
+    rbm_extra_centers: Tuple[float, ...] = ()
 
     # --- D / G band (fit jointly over the whole D-G region) ---
     # D, D'' (broad disorder band), G- and G+ are fit simultaneously so the

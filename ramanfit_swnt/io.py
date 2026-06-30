@@ -14,6 +14,36 @@ def _read_text(source):
         return f.read()
 
 
+def choose_spectrum_file(default=None, initialdir="data", title="Select a spectrum file"):
+    """Open a native file-picker dialog and return the chosen path.
+
+    Uses ``tkinter`` (always available with CPython, works in Jupyter / VS Code
+    notebooks).  Returns the selected path; if the user cancels, or no GUI is
+    available (e.g. a headless run), falls back to ``default`` so notebooks stay
+    runnable non-interactively.  Set ``RAMANFIT_NO_DIALOG=1`` to skip the dialog
+    entirely (used when re-executing the notebook with nbconvert).
+    """
+    import os
+    if os.environ.get("RAMANFIT_NO_DIALOG"):
+        return default
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+    except Exception:                       # no Tk -> headless; use the default
+        return default
+    try:
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes("-topmost", True)   # bring the dialog to the front
+        path = filedialog.askopenfilename(
+            title=title, initialdir=initialdir,
+            filetypes=[("Spectra", "*.tsv *.csv *.txt *.dat"), ("All files", "*.*")])
+        root.destroy()
+    except Exception:                       # display not available
+        return default
+    return path or default                  # "" on cancel -> default
+
+
 def load_spectrum(source):
     """Load a two-column spectrum from a path or file-like object.
 

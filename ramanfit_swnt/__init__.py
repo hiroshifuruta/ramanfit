@@ -10,12 +10,12 @@ Example
 >>> print(res["calibration"]["offset"])
 """
 from .config import SwntConfig
-from .io import load_spectrum
+from .io import load_spectrum, choose_spectrum_file
 from .calibrate import calibrate, find_si_peak
 from . import swnt, kataura, report
 
-__all__ = ["SwntConfig", "load_spectrum", "calibrate", "find_si_peak",
-           "analyze_swnt", "swnt", "kataura", "report"]
+__all__ = ["SwntConfig", "load_spectrum", "choose_spectrum_file", "calibrate",
+           "find_si_peak", "analyze_swnt", "swnt", "kataura", "report"]
 
 
 def analyze_swnt(x, y, config=None):
