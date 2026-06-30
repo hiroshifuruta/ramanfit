@@ -50,7 +50,8 @@ def analyze_swnt(x, y, config=None):
     # 4. 2D band
     twod_band = swnt.fit_2d_band(x_cal, y, region=cfg.twod_region,
                                  shoulder_offset=cfg.twod_shoulder_offset,
-                                 fit_gstar=cfg.twod_fit_gstar)
+                                 fit_gstar=cfg.twod_fit_gstar,
+                                 fit_2dprime=cfg.twod_fit_2dprime)
 
     # 5. Quality metrics
     gp_height = dg["G_plus"]["height"]

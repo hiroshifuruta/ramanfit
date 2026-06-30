@@ -75,18 +75,23 @@ def test_low_defect_quality(result):
 
 def test_2d_multicomponent(result):
     t = result["twod_band"]
-    # the 2D region resolves into the G* band plus a multi-component 2D overtone
-    assert len(t["peaks"]) >= 2
+    # the second-order region resolves into the full multi-band set
+    assert len(t["peaks"]) >= 5
     assert t["r_squared"] > 0.99
     # the dominant *2D* component is near 2655 and is the metric peak
     assert t["peak"]["label"] == "2D"
     assert t["peak"]["center"] == pytest.approx(2655, abs=15)
-    # the G* (iTOLA) combination band near 2450 is resolved
-    gstar = [p for p in t["peaks"] if p["label"] == "G*"]
-    assert len(gstar) == 1
-    assert gstar[0]["center"] == pytest.approx(2450, abs=40)
-    # G* must not be picked as the I(2D)/I(G) peak
-    assert t["peak"] is not gstar[0]
+    # the 2D' band (overtone of D') near 3185 is resolved
+    dprime = [p for p in t["peaks"] if p["label"] == "2D'"]
+    assert len(dprime) == 1
+    assert dprime[0]["center"] == pytest.approx(3185, abs=40)
+    # the baseline is a flat constant at the true continuum floor; it tracks the
+    # far plateau past 2D' (~3400-3500) within ~15 cps and is horizontal
+    base = t["baseline"]
+    xs, ys = t["x"], t["y"]
+    assert np.ptp(base) < 1e-6                       # constant (flat)
+    sel = (xs >= 3400) & (xs <= 3500)
+    assert abs(base[0] - float(np.median(ys[sel]))) < 15
     # components are distinct in center
     centers = sorted(p["center"] for p in t["peaks"])
     assert all(b - a > 5 for a, b in zip(centers, centers[1:]))

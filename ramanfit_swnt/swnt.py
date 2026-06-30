@@ -161,18 +161,22 @@ def fit_dg(x, y, region=(1000.0, 1700.0), gminus_lineshape="lorentzian"):
 
 
 # ----------------------------- 2D -----------------------------
-def _seed_2d_components(xs, ys, shoulder_offset=35.0, fit_gstar=True):
-    """Build seed specs for the 2D region: a broad G* band plus the 2D triplet.
+def _seed_2d_components(xs, ys, shoulder_offset=35.0, fit_gstar=True,
+                        fit_2dprime=True):
+    """Build seed specs for the full second-order region (matches a reference
+    Igor multipeak fit of this sample): G*, the 2D triplet, two weak broad
+    combination bands at ~2915 and ~3105, 2D', and a weak ~3510 band.
 
-    The 2D band itself is a single tall peak with weaker shoulders, not several
-    resolved maxima -- prominence-based peak finding either misses the shoulders
-    or fragments the noisy summit.  So we anchor on the global maximum and add a
-    shoulder seed ``shoulder_offset`` cm^-1 to either side.
+    The strong 2D band is a single tall peak with weaker shoulders, not several
+    resolved maxima, so it is seeded as the maximum of the 2D window (~2520-2780)
+    plus a shoulder ``shoulder_offset`` cm^-1 to each side.  The other bands sit
+    at fixed centers (each added only if the window covers it):
 
-    ``fit_gstar`` adds the **G\\*** (iTOLA) combination band near 2450 cm^-1 --
-    a broad, weak feature physically distinct from the 2D overtone but living in
-    the same window.  It gets its own (wider) sigma bounds and a center range
-    fixed to ~2400-2490 so it cannot wander into the 2D triplet.
+    * **G\\*** (~2446, iTOLA combination band) -- ``fit_gstar``
+    * **2D** triplet (~2615 / 2654 / 2685)
+    * **D+D''** (~2915) and **2D''** (~3105) -- weak broad combination bands
+    * **2D'** (~3185, overtone of D') -- ``fit_2dprime``
+    * a weak band near ~3510
 
     Returns a list of seed dicts (the ``seeds`` format of ``fit_lorentzians``).
     """
@@ -180,66 +184,115 @@ def _seed_2d_components(xs, ys, shoulder_offset=35.0, fit_gstar=True):
         return []
     seeds = []
     lo, hi = float(xs.min()), float(xs.max())
-    if fit_gstar and lo <= 2450 <= hi:
-        seeds.append({"center": 2450.0, "label": "G*", "sigma": 60.0,
-                      "sigma_min": 30.0, "sigma_max": 180.0,
-                      "center_min": 2410.0, "center_max": 2490.0})
-    # 2D triplet: main maximum (searched above the G* region) + a shoulder each side
-    main_mask = xs >= 2520
-    cmax = float(xs[main_mask][int(np.argmax(ys[main_mask]))]) if main_mask.any() \
+    if fit_gstar and lo <= 2446 <= hi:
+        seeds.append({"center": 2446.0, "label": "G*", "sigma": 55.0,
+                      "sigma_min": 20.0, "sigma_max": 110.0,
+                      "center_min": 2420.0, "center_max": 2470.0})
+    # 2D triplet: main maximum (searched in the 2D window only) + a shoulder each side
+    win = (xs >= 2520) & (xs <= 2780)
+    cmax = float(xs[win][int(np.argmax(ys[win]))]) if win.any() \
         else float(xs[int(np.argmax(ys))])
     centers = [cmax]
     if cmax - shoulder_offset >= max(lo, 2520):
         centers.insert(0, cmax - shoulder_offset)
-    if cmax + shoulder_offset <= hi:
+    if cmax + shoulder_offset <= min(hi, 2780):
         centers.append(cmax + shoulder_offset)
     for c in centers:
         seeds.append({"center": c, "label": "2D", "sigma": 30.0,
                       "sigma_min": 5.0, "sigma_max": 120.0,
                       "center_min": c - 40, "center_max": c + 40})
+    # weak broad combination bands (D+D'' and 2D'')
+    for center, lab, cwin in [(2915.0, "D+D''", 45.0), (3105.0, "2D''", 55.0)]:
+        if lo <= center <= hi:
+            seeds.append({"center": center, "label": lab, "sigma": 70.0,
+                          "sigma_min": 20.0, "sigma_max": 130.0,
+                          "center_min": center - cwin,
+                          "center_max": center + cwin})
+    if fit_2dprime and lo <= 3185 <= hi:
+        seeds.append({"center": 3185.0, "label": "2D'", "sigma": 50.0,
+                      "sigma_min": 8.0, "sigma_max": 90.0,
+                      "center_min": 3150.0, "center_max": 3220.0})
     return seeds
 
 
-def fit_2d_band(x, y, region=(2380.0, 2820.0), shoulder_offset=35.0,
-                fit_gstar=True, min_height_frac=0.02):
+def _valley_baseline(xs, ys):
+    """Estimate a flat (constant) 2D-region baseline at the true continuum floor.
+
+    With every band fit explicitly (the weak combination bands carry the
+    inter-band intensity), the genuine baseline is the flat far plateau past the
+    2D' band (~3400-3500 cm^-1), NOT the ~3050 dip -- that dip is propped up by
+    the D+D'' / 2D'' band tails.  Use that plateau's level, falling back to a low
+    percentile of the window if it is out of range.
+    """
+    sel = (xs >= 3400) & (xs <= 3500)
+    level = float(np.median(ys[sel])) if sel.any() \
+        else float(np.percentile(ys, 5))
+    return np.full_like(xs, level)
+
+
+def fit_2d_band(x, y, region=(2380.0, 3260.0), shoulder_offset=35.0,
+                fit_gstar=True, fit_2dprime=True, min_height_frac=0.02):
     """Fit the 2D region over a wide window as a multi-component profile.
 
-    Two physically distinct families share this window and are fit jointly:
+    Three physically distinct families share this window and are fit jointly:
 
     * **G\\*** (~2450, iTOLA combination band) -- broad and weak, included when
       ``fit_gstar`` and the window covers 2450.
     * the **2D** overtone (~2655) -- a main peak with shoulders from the
       diameter distribution / different (n,m) species.
+    * **2D'** (~3180, overtone of the D' band) -- weak, included when
+      ``fit_2dprime`` and the window reaches it.
+
+    The window is deliberately wide (default 2380-3500) so the ~3050 cm^-1
+    inter-band valley is included.  The baseline is a flat constant pinned to
+    that valley level (see :func:`_valley_baseline`): fitting a constant/linear
+    background jointly with the peaks pulls it below the true level because the
+    peak tails steal area, so the level is set from the data first, subtracted,
+    and the peaks fit on the flattened data with **no** further background.  The
+    flat line is the reported ``baseline``.
 
     After the joint fit, components weaker than ``min_height_frac`` of the
     tallest are dropped and the band refit, so the reported count reflects only
     real components.
 
     Returns ``peaks`` (components, by descending height; each has a ``label`` of
-    ``"G*"`` or ``"2D"``), ``peak`` (the dominant 2D peak, kept for the
-    I(2D)/I(G) metric), ``r_squared`` and the data.
+    ``"G*"``, ``"2D"`` or ``"2D'"``), ``peak`` (the dominant 2D peak, kept for
+    the I(2D)/I(G) metric), ``r_squared``, ``baseline`` and the data.
     """
     xs, ys = slice_region(x, y, *region)
-    seeds = _seed_2d_components(xs, ys, shoulder_offset, fit_gstar)
+    seeds = _seed_2d_components(xs, ys, shoulder_offset, fit_gstar, fit_2dprime)
     if not seeds:
-        return {"peaks": [], "peak": None, "r_squared": None, "x": xs, "y": ys}
+        return {"peaks": [], "peak": None, "r_squared": None,
+                "baseline": None, "x": xs, "y": ys}
+
+    curve = _valley_baseline(xs, ys)
+    yb = ys - curve
 
     def _fit(seed_list):
         for i, s in enumerate(seed_list):
             s["prefix"] = f"t{i}_"
-        out, records = fit_lorentzians(xs, ys, seed_list)
+        # no background -- the curved continuum is already removed
+        out, records = fit_lorentzians(xs, yb, seed_list, background="none")
         for rec, s in zip(records, seed_list):
             rec["label"] = s["label"]
         return out, records
 
     out, records = _fit(seeds)
     hmax = max((r["height"] for r in records), default=0.0)
+    # prune only negligible 2D *shoulders*; the named G* / 2D' bands are kept
+    # even when weak because they are physically distinct features we sought.
     kept = [s for s, r in zip(seeds, records)
-            if r["height"] >= min_height_frac * hmax]
-    if 0 < len(kept) < len(records):           # drop negligible components, refit
+            if s["label"] != "2D" or r["height"] >= min_height_frac * hmax]
+    if 0 < len(kept) < len(records):           # drop negligible shoulders, refit
         out, records = _fit(kept)
     records.sort(key=lambda r: r["height"], reverse=True)
+    # baseline is the valley-anchored continuum itself (no offset)
+    baseline = curve
+    # R^2 against the *original* data (fit + curve vs ys)
+    full_fit = out.best_fit + curve
+    r2 = float(1.0 - np.var(ys - full_fit) / np.var(ys))
     # the I(2D)/I(G) metric must use the 2D overtone, not the G* band
     twod_peaks = [r for r in records if r["label"] == "2D"] or records
     return {"peaks": records, "peak": (twod_peaks[0] if twod_peaks else None),
-            "r_squared": r_squared(out), "result": out, "x": xs, "y": ys}
+            "r_squared": r2, "result": out, "baseline": baseline,
+            "x": xs, "y": ys}

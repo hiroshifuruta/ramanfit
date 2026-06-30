@@ -2,10 +2,12 @@
 import numpy as np
 
 
-def plot_analysis(results, ax=None):
+def plot_analysis(results, ax=None, suptitle=None):
     """Draw the analysis as three band columns (RBM, D-G, 2D), each with the
     data + joint fit on top and the (fit − data) residual directly below it,
     sharing the x-axis so data and residual line up vertically.
+
+    ``suptitle`` (e.g. the data file name) is shown above the whole figure.
 
     Returns the matplotlib Figure.  Imports matplotlib lazily so importing the
     package does not require a display backend.
@@ -14,6 +16,8 @@ def plot_analysis(results, ax=None):
 
     fig, axes = plt.subplots(2, 3, figsize=(16, 8), sharex="col",
                              gridspec_kw={"height_ratios": [3, 1]})
+    if suptitle:
+        fig.suptitle(suptitle)
 
     def _band(col, x, y, out, title, comp_styles=None, annot=None):
         """Plot data+fit on the top row and residual on the bottom row."""
@@ -59,13 +63,27 @@ def plot_analysis(results, ax=None):
                        ("gm_", "C0", "G-"), ("gp_", "C3", "G+"),
                        ("dp_", "C6", "D'")])
 
-    # --- 2D region (multi-component) ---
+    # --- 2D region (multi-component, flat baseline) ---
     t = results["twod_band"]
-    n2d = sum(1 for p in t.get("peaks", []) if p.get("label") == "2D")
-    has_gstar = any(p.get("label") == "G*" for p in t.get("peaks", []))
-    title = f"2D band ({n2d} comp{'s' if n2d != 1 else ''}"
-    title += " + G*)" if has_gstar else ")"
-    _band(2, t["x"], t["y"], t.get("result"), title)
+    npk = len(t.get("peaks", []))
+    title = f"2D region ({npk} bands)"
+    top, bot = axes[0][2], axes[1][2]
+    x2, y2 = t["x"], t["y"]
+    top.plot(x2, y2, "C1.", ms=2, alpha=0.4, label="data")
+    out2, base = t.get("result"), t.get("baseline")
+    if out2 is not None and base is not None:
+        full_fit = out2.best_fit + base            # peaks fit on de-baselined data
+        comps = out2.eval_components(x=x2)
+        top.plot(x2, full_fit, "k-", lw=1.5, label="fit")
+        top.plot(x2, base, "k--", lw=0.8, alpha=0.6, label="baseline")
+        for key in comps:                          # each peak rides on the curve
+            if key != "lin_":
+                top.fill_between(x2, comps[key] + base, base, alpha=0.3)
+        bot.plot(x2, full_fit - y2, "C3-", lw=0.8, alpha=0.7)
+    top.legend(fontsize=8)
+    bot.axhline(0, color="k", lw=0.5)
+    top.set_title(title)
+    bot.set_xlabel("Raman shift [cm$^{-1}$]"); bot.set_ylabel("fit − data")
 
     fig.tight_layout()
     return fig

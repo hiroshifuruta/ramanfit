@@ -39,13 +39,16 @@ class SwntConfig:
     gminus_lineshape: str = "lorentzian"  # "lorentzian" (semicond.) or "bwf" (metallic)
 
     # --- 2D ---
-    # Wide window so both the broad G* (~2450, iTOLA) band and the multi-
-    # component 2D overtone (~2655, diameter-distribution split) are captured;
-    # G* + the 2D main peak + a shoulder each side are fit jointly and the
-    # negligible ones pruned.
-    twod_region: Tuple[float, float] = (2380.0, 2820.0)
-    twod_shoulder_offset: float = 35.0      # cm^-1, shoulder seed spacing
-    twod_fit_gstar: bool = True             # include the ~2450 G* band
+    # Wide window covering the whole second-order region so every band a
+    # reference Igor multipeak fit resolves is captured: G* (~2446), the 2D
+    # triplet (~2655), the weak D+D'' (~2915) and 2D'' (~3105) combination
+    # bands, 2D' (~3185) and a weak ~3510 band.  A flat (constant) baseline is
+    # used; the broad combination bands carry the inter-band intensity that a
+    # curved background would otherwise have to chase.
+    twod_region: Tuple[float, float] = (2380.0, 3560.0)
+    twod_shoulder_offset: float = 35.0      # cm^-1, 2D shoulder seed spacing
+    twod_fit_gstar: bool = True             # include the ~2446 G* band
+    twod_fit_2dprime: bool = True           # include the ~3185 2D' band
 
     # --- (n,m) assignment ---
     nm_diameter_tol: float = 0.06      # nm; |d_candidate - d_measured| tolerance

@@ -68,12 +68,19 @@ def fit_lorentzians(x, y, seeds, sigma0=10.0, sigma_bounds=(2.0, 80.0),
     """
     if background == "constant":
         bg = ConstantModel(prefix="lin_")
+        pars = bg.guess(y, x=x)
+        model = bg
     elif background == "linear":
         bg = LinearModel(prefix="lin_")
+        pars = bg.guess(y, x=x)
+        model = bg
+    elif background == "none":
+        # caller has already removed the continuum; fit pure peaks
+        from lmfit import Parameters
+        pars = Parameters()
+        model = None
     else:
         raise ValueError(f"Unknown background: {background!r}")
-    pars = bg.guess(y, x=x)
-    model = bg
     prefixes = []
     span = float(np.trapezoid(np.clip(y - np.min(y), 0, None), x)) if len(x) > 1 else 1.0
     for i, seed in enumerate(seeds):
@@ -94,7 +101,7 @@ def fit_lorentzians(x, y, seeds, sigma0=10.0, sigma_bounds=(2.0, 80.0),
         )
         amp0 = seed.get("amplitude", max(1.0, span / max(1, len(seeds))))
         pars[f"{prefix}amplitude"].set(value=amp0, min=1.0)
-        model = model + comp
+        model = comp if model is None else model + comp
 
     out = model.fit(y, pars, x=x)
     records = [peak_record(out, prefix, label) for prefix, label in prefixes]
