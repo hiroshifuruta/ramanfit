@@ -39,7 +39,7 @@ class SwntConfig:
     # --- D / G band (fit jointly over the whole D-G region) ---
     # D, D'' (broad disorder band), G- and G+ are fit simultaneously so the
     # D-to-G valley is modelled instead of forced onto a straight baseline.
-    dg_region: Tuple[float, float] = (1000.0, 1700.0)
+    dg_region: Tuple[float, float] = (1000.0, 1800.0)
     gminus_lineshape: str = "lorentzian"  # "lorentzian" (semicond.) or "bwf" (metallic)
 
     # --- 2D ---

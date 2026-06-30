@@ -88,7 +88,7 @@ def _gminus_record(out):
     return rec, False
 
 
-def fit_dg(x, y, region=(1000.0, 1700.0), gminus_lineshape="lorentzian"):
+def fit_dg(x, y, region=(1000.0, 1800.0), gminus_lineshape="lorentzian"):
     """Jointly fit the whole D-G region with five Lorentzians + linear background:
 
     * **D**   (~1340) — defect band
@@ -96,7 +96,7 @@ def fit_dg(x, y, region=(1000.0, 1700.0), gminus_lineshape="lorentzian"):
     * **G-**  (~1567, Lorentzian or BWF) and **G+** (~1592)
     * **D'**  (~1600-1620) — defect-activated band sitting just above G+
 
-    Fitting the region as a whole (default 1000-1700 cm^-1) avoids the railed,
+    Fitting the region as a whole (default 1000-1800 cm^-1) avoids the railed,
     uncertainty-free fits produced by fitting D and G in separate narrow windows.
     ``center(G+) > center(G-)`` is enforced via non-overlapping bounds.
 
