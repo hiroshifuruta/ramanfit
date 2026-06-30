@@ -2,7 +2,7 @@
 D and 2D (-> defect / quality metrics)."""
 import numpy as np
 from scipy.signal import find_peaks
-from lmfit.models import LinearModel, LorentzianModel, BreitWignerModel
+from lmfit.models import ConstantModel, LorentzianModel, BreitWignerModel
 
 from .peaks import slice_region, fit_lorentzians, peak_record, r_squared
 
@@ -104,12 +104,17 @@ def fit_dg(x, y, region=(1000.0, 1700.0), gminus_lineshape="lorentzian"):
     shoulder, leaving a large oscillating residual across 1550-1630 cm^-1;
     adding D' roughly halves that residual and sharpens G+ to its true width.
 
+    The background is a flat **constant**: the D-G window's continuum is level
+    across samples here, so a linear background only tilts to chase the strong
+    G+ tail (pulling the right edge well below the data) without improving the
+    fit -- the five bands already carry any genuine slope in their tails.
+
     Returns a dict with ``D``, ``Dpp``, ``G_plus``, ``G_minus``, ``Dprime``
     records, the ``splitting`` and ``metallic`` verdict, ``r_squared`` and the
     lmfit result.
     """
     xg, yg = slice_region(x, y, *region)
-    bg = LinearModel(prefix="lin_")
+    bg = ConstantModel(prefix="lin_")
     pars = bg.guess(yg, x=xg)
     ymax = float(yg.max())
 
