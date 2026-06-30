@@ -39,7 +39,13 @@ class SwntConfig:
     gminus_lineshape: str = "lorentzian"  # "lorentzian" (semicond.) or "bwf" (metallic)
 
     # --- 2D ---
-    twod_region: Tuple[float, float] = (2500.0, 2800.0)
+    # Wide window so both the broad G* (~2450, iTOLA) band and the multi-
+    # component 2D overtone (~2655, diameter-distribution split) are captured;
+    # G* + the 2D main peak + a shoulder each side are fit jointly and the
+    # negligible ones pruned.
+    twod_region: Tuple[float, float] = (2380.0, 2820.0)
+    twod_shoulder_offset: float = 35.0      # cm^-1, shoulder seed spacing
+    twod_fit_gstar: bool = True             # include the ~2450 G* band
 
     # --- (n,m) assignment ---
     nm_diameter_tol: float = 0.06      # nm; |d_candidate - d_measured| tolerance

@@ -73,6 +73,25 @@ def test_low_defect_quality(result):
     assert q["twod_center"] == pytest.approx(2655, abs=10)
 
 
+def test_2d_multicomponent(result):
+    t = result["twod_band"]
+    # the 2D region resolves into the G* band plus a multi-component 2D overtone
+    assert len(t["peaks"]) >= 2
+    assert t["r_squared"] > 0.99
+    # the dominant *2D* component is near 2655 and is the metric peak
+    assert t["peak"]["label"] == "2D"
+    assert t["peak"]["center"] == pytest.approx(2655, abs=15)
+    # the G* (iTOLA) combination band near 2450 is resolved
+    gstar = [p for p in t["peaks"] if p["label"] == "G*"]
+    assert len(gstar) == 1
+    assert gstar[0]["center"] == pytest.approx(2450, abs=40)
+    # G* must not be picked as the I(2D)/I(G) peak
+    assert t["peak"] is not gstar[0]
+    # components are distinct in center
+    centers = sorted(p["center"] for p in t["peaks"])
+    assert all(b - a > 5 for a, b in zip(centers, centers[1:]))
+
+
 def test_rbm_diameter_relation_monotonic():
     from ramanfit_swnt.swnt import rbm_to_diameter
     # higher RBM frequency -> smaller diameter

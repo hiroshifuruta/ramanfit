@@ -161,19 +161,85 @@ def fit_dg(x, y, region=(1000.0, 1700.0), gminus_lineshape="lorentzian"):
 
 
 # ----------------------------- 2D -----------------------------
-def _single_lorentzian(x, y, region, center0, cwin=25, sigma0=20, sigma_max=80):
-    xs, ys = slice_region(x, y, *region)
+def _seed_2d_components(xs, ys, shoulder_offset=35.0, fit_gstar=True):
+    """Build seed specs for the 2D region: a broad G* band plus the 2D triplet.
+
+    The 2D band itself is a single tall peak with weaker shoulders, not several
+    resolved maxima -- prominence-based peak finding either misses the shoulders
+    or fragments the noisy summit.  So we anchor on the global maximum and add a
+    shoulder seed ``shoulder_offset`` cm^-1 to either side.
+
+    ``fit_gstar`` adds the **G\\*** (iTOLA) combination band near 2450 cm^-1 --
+    a broad, weak feature physically distinct from the 2D overtone but living in
+    the same window.  It gets its own (wider) sigma bounds and a center range
+    fixed to ~2400-2490 so it cannot wander into the 2D triplet.
+
+    Returns a list of seed dicts (the ``seeds`` format of ``fit_lorentzians``).
+    """
     if len(xs) < 8:
-        return None, xs, ys
-    seeds = [{"center": center0, "prefix": "p_", "sigma": sigma0,
-              "sigma_max": sigma_max, "center_min": center0 - cwin,
-              "center_max": center0 + cwin}]
-    out, records = fit_lorentzians(xs, ys, seeds)
-    rec = records[0]
-    rec["r_squared"] = r_squared(out)
-    return rec, xs, ys
+        return []
+    seeds = []
+    lo, hi = float(xs.min()), float(xs.max())
+    if fit_gstar and lo <= 2450 <= hi:
+        seeds.append({"center": 2450.0, "label": "G*", "sigma": 60.0,
+                      "sigma_min": 30.0, "sigma_max": 180.0,
+                      "center_min": 2410.0, "center_max": 2490.0})
+    # 2D triplet: main maximum (searched above the G* region) + a shoulder each side
+    main_mask = xs >= 2520
+    cmax = float(xs[main_mask][int(np.argmax(ys[main_mask]))]) if main_mask.any() \
+        else float(xs[int(np.argmax(ys))])
+    centers = [cmax]
+    if cmax - shoulder_offset >= max(lo, 2520):
+        centers.insert(0, cmax - shoulder_offset)
+    if cmax + shoulder_offset <= hi:
+        centers.append(cmax + shoulder_offset)
+    for c in centers:
+        seeds.append({"center": c, "label": "2D", "sigma": 30.0,
+                      "sigma_min": 5.0, "sigma_max": 120.0,
+                      "center_min": c - 40, "center_max": c + 40})
+    return seeds
 
 
-def fit_2d_band(x, y, region=(2500.0, 2800.0)):
-    rec, xs, ys = _single_lorentzian(x, y, region, 2650, cwin=60, sigma0=40, sigma_max=150)
-    return {"peak": rec, "x": xs, "y": ys}
+def fit_2d_band(x, y, region=(2380.0, 2820.0), shoulder_offset=35.0,
+                fit_gstar=True, min_height_frac=0.02):
+    """Fit the 2D region over a wide window as a multi-component profile.
+
+    Two physically distinct families share this window and are fit jointly:
+
+    * **G\\*** (~2450, iTOLA combination band) -- broad and weak, included when
+      ``fit_gstar`` and the window covers 2450.
+    * the **2D** overtone (~2655) -- a main peak with shoulders from the
+      diameter distribution / different (n,m) species.
+
+    After the joint fit, components weaker than ``min_height_frac`` of the
+    tallest are dropped and the band refit, so the reported count reflects only
+    real components.
+
+    Returns ``peaks`` (components, by descending height; each has a ``label`` of
+    ``"G*"`` or ``"2D"``), ``peak`` (the dominant 2D peak, kept for the
+    I(2D)/I(G) metric), ``r_squared`` and the data.
+    """
+    xs, ys = slice_region(x, y, *region)
+    seeds = _seed_2d_components(xs, ys, shoulder_offset, fit_gstar)
+    if not seeds:
+        return {"peaks": [], "peak": None, "r_squared": None, "x": xs, "y": ys}
+
+    def _fit(seed_list):
+        for i, s in enumerate(seed_list):
+            s["prefix"] = f"t{i}_"
+        out, records = fit_lorentzians(xs, ys, seed_list)
+        for rec, s in zip(records, seed_list):
+            rec["label"] = s["label"]
+        return out, records
+
+    out, records = _fit(seeds)
+    hmax = max((r["height"] for r in records), default=0.0)
+    kept = [s for s, r in zip(seeds, records)
+            if r["height"] >= min_height_frac * hmax]
+    if 0 < len(kept) < len(records):           # drop negligible components, refit
+        out, records = _fit(kept)
+    records.sort(key=lambda r: r["height"], reverse=True)
+    # the I(2D)/I(G) metric must use the 2D overtone, not the G* band
+    twod_peaks = [r for r in records if r["label"] == "2D"] or records
+    return {"peaks": records, "peak": (twod_peaks[0] if twod_peaks else None),
+            "r_squared": r_squared(out), "result": out, "x": xs, "y": ys}
