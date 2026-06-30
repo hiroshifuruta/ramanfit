@@ -37,31 +37,70 @@ def seed_rbm_centers(x, y, min_prominence_frac=0.03):
 
 
 def fit_rbm(x, y, region=(180.0, 350.0), relation="248/w", min_prominence_frac=0.03,
-            extra_centers=()):
-    """Fit the RBM region with one Lorentzian per detected peak.
+            extra_centers=(), fwhm_max=15.0, max_iter=8, min_height_frac=0.10):
+    """Fit the RBM region with one Lorentzian per band, found residual-driven.
 
     A **constant** baseline is used (not linear): a notch filter blocks the
     Rayleigh line below ~200 cm^-1, so there is no genuine sloping background
     across the RBM window, and a linear baseline would spuriously tilt to chase
     the notch edge.
 
-    ``extra_centers`` lets you seed Lorentzians at frequencies (cm^-1) the
-    prominence-based detector misses -- e.g. a shoulder riding on a stronger
-    neighbour.  They are merged with the auto-detected centers (anything within
-    3 cm^-1 of an existing seed is treated as a duplicate and dropped).
+    Detection is iterative: start from prominence-detected maxima (plus
+    ``extra_centers``), fit, then add a Lorentzian wherever the residual still
+    has a positive bump, and refit -- repeating until the residual is flat
+    (``max_iter`` cap).  This resolves shoulders that are *not* local maxima
+    (a band buried on a stronger neighbour's flank) which prominence alone
+    misses, and prevents one component from ballooning to cover two bands.
+    Each component's FWHM is capped at ``fwhm_max`` for the same reason, and
+    components weaker than ``min_height_frac`` of the tallest are pruned.
+
+    ``extra_centers`` still lets you force a seed at a known frequency; it is no
+    longer usually needed because the residual loop finds buried shoulders on
+    its own.
     """
     xr, yr = slice_region(x, y, *region)
+    if len(xr) < 5:
+        return {"peaks": [], "r_squared": None, "result": None, "x": xr, "y": yr}
+    lo, hi = float(xr.min()), float(xr.max())
+    base = float(np.percentile(yr, 5))
+    span = float(yr.max() - base)
+    smax = fwhm_max / 2.0
+
     centers = seed_rbm_centers(xr, yr, min_prominence_frac)
     for c in extra_centers:
-        if region[0] <= c <= region[1] and all(abs(c - e) > 3.0 for e in centers):
+        if lo <= c <= hi and all(abs(c - e) > 3.0 for e in centers):
             centers.append(float(c))
     centers.sort()
     if not centers:
-        return {"peaks": [], "r_squared": None, "result": None, "x": xr, "y": yr}
-    seeds = [{"center": c, "prefix": f"r{i}_", "label": f"RBM{i+1}",
-              "sigma": 5.0, "sigma_min": 1.5, "sigma_max": 15.0,
-              "center_min": c - 8, "center_max": c + 8} for i, c in enumerate(centers)]
-    out, records = fit_lorentzians(xr, yr, seeds, background="constant")
+        centers = [float(xr[int(np.argmax(yr))])]
+
+    def _fit(cs):
+        seeds = [{"center": c, "prefix": f"r{i}_", "label": f"RBM{i+1}",
+                  "sigma": 4.0, "sigma_min": 1.5, "sigma_max": smax,
+                  "center_min": c - 6, "center_max": c + 6}
+                 for i, c in enumerate(cs)]
+        return fit_lorentzians(xr, yr, seeds, background="constant")
+
+    out, records = _fit(centers)
+    for _ in range(max_iter):                  # residual-driven refinement
+        resid = np.convolve(yr - out.best_fit, np.ones(5) / 5.0, mode="same")
+        idx, _props = find_peaks(
+            resid, prominence=max(10.0, 0.6 * min_prominence_frac * span),
+            distance=4)
+        new = [float(xr[i]) for i in idx
+               if lo + 5 < xr[i] < hi - 5
+               and all(abs(xr[i] - c) > 6 for c in centers)]
+        if not new:
+            break
+        centers = sorted(centers + new)
+        out, records = _fit(centers)
+
+    hmax = max((r["height"] for r in records), default=0.0)
+    kept = [r["center"] for r in records if r["height"] >= min_height_frac * hmax]
+    if 0 < len(kept) < len(centers):           # drop negligible bands, refit
+        out, records = _fit(sorted(kept))
+
+    records.sort(key=lambda r: r["center"])
     for rec in records:
         rec["diameter_nm"] = float(rbm_to_diameter(rec["center"], relation))
     return {"peaks": records, "r_squared": r_squared(out), "result": out,
