@@ -9,15 +9,16 @@ Example
 >>> res = analyze_swnt(x, y, SwntConfig(laser_nm=532))
 >>> print(res["calibration"]["offset"])
 """
-from .config import SwntConfig
+from .config import (SwntConfig, load_config, save_rbm_centers,
+                     rbm_sidecar_path)
 from .io import load_spectrum, choose_spectrum_file
 from .calibrate import calibrate, find_si_peak
 from .export import export_pdf
 from . import swnt, kataura, report
 
-__all__ = ["SwntConfig", "load_spectrum", "choose_spectrum_file", "calibrate",
-           "find_si_peak", "export_pdf", "analyze_swnt", "swnt", "kataura",
-           "report"]
+__all__ = ["SwntConfig", "load_config", "save_rbm_centers", "rbm_sidecar_path",
+           "load_spectrum", "choose_spectrum_file", "calibrate", "find_si_peak",
+           "export_pdf", "analyze_swnt", "swnt", "kataura", "report"]
 
 
 def analyze_swnt(x, y, config=None):

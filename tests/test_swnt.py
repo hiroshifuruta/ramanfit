@@ -106,6 +106,40 @@ def test_choose_spectrum_file_headless(monkeypatch):
     assert choose_spectrum_file() is None
 
 
+def test_config_sidecar_and_shared(tmp_path):
+    import json
+    from ramanfit_swnt import (load_config, save_rbm_centers,
+                               rbm_sidecar_path, SwntConfig)
+    spec = str(tmp_path / "spec.txt")
+
+    # no files -> defaults
+    c = load_config(spec, shared_path=str(tmp_path / "none.json"))
+    assert c.rbm_extra_centers == ()
+    assert c.laser_nm == SwntConfig().laser_nm
+
+    # per-file RBM sidecar round-trips as a tuple
+    p = save_rbm_centers(spec, (190.0, 263.0))
+    assert p == rbm_sidecar_path(spec)
+    c = load_config(spec, shared_path=str(tmp_path / "none.json"))
+    assert c.rbm_extra_centers == (190.0, 263.0)
+
+    # shared config overlays known keys (tuple fields survive), ignores unknown
+    shared = tmp_path / "_config.json"
+    shared.write_text(json.dumps({"laser_nm": 633, "rbm_region": [180, 360],
+                                  "unknown_key": 1}))
+    c = load_config(spec, shared_path=str(shared))
+    assert c.laser_nm == 633
+    assert c.rbm_region == (180, 360)          # list -> tuple
+    assert c.rbm_extra_centers == (190.0, 263.0)  # sidecar still applies
+
+    # explicit kwargs win over the shared file
+    assert load_config(spec, shared_path=str(shared), laser_nm=532).laser_nm == 532
+
+    # clearing removes the sidecar (back to auto-detect)
+    save_rbm_centers(spec, ())
+    assert not os.path.exists(rbm_sidecar_path(spec))
+
+
 def test_rbm_diameter_relation_monotonic():
     from ramanfit_swnt.swnt import rbm_to_diameter
     # higher RBM frequency -> smaller diameter

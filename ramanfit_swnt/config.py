@@ -1,5 +1,7 @@
 """Configuration for SWNT Raman analysis."""
-from dataclasses import dataclass, field
+import json
+import os
+from dataclasses import dataclass, fields
 from typing import Tuple
 
 # Photon energy (eV) = 1239.84193 (eV*nm) / wavelength (nm)
@@ -60,3 +62,74 @@ class SwntConfig:
     @property
     def laser_eV(self) -> float:
         return HC_EV_NM / self.laser_nm
+
+
+# --------------------------- config persistence ---------------------------
+# Two-layer scheme:
+#  * shared parameters (laser_nm, regions, lineshape, ...) live in one
+#    project-level file, ``data/_config.json`` by default;
+#  * the per-spectrum RBM shoulder seeds, which differ from file to file, live
+#    in a sidecar next to each spectrum: ``data/<name>.txt`` -> ``data/<name>.rbm.json``.
+_SHARED_CONFIG = os.path.join("data", "_config.json")
+
+# tuple-typed fields need list<->tuple conversion when (de)serialising JSON
+_TUPLE_FIELDS = {f.name for f in fields(SwntConfig)
+                 if getattr(f.type, "__origin__", None) is tuple
+                 or str(f.type).startswith("typing.Tuple")}
+
+
+def rbm_sidecar_path(infile):
+    """Return the RBM-seed sidecar path for a spectrum file.
+
+    ``data/LA.._X0Y0.txt`` -> ``data/LA.._X0Y0.rbm.json``.
+    """
+    return os.path.splitext(infile)[0] + ".rbm.json"
+
+
+def save_rbm_centers(infile, centers):
+    """Write the manual RBM extra-centers for ``infile`` to its sidecar.
+
+    Pass an empty/falsy ``centers`` to remove the sidecar (back to auto-detect).
+    """
+    path = rbm_sidecar_path(infile)
+    if not centers:
+        if os.path.exists(path):
+            os.remove(path)
+        return path
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump([float(c) for c in centers], fh)
+    return path
+
+
+def load_config(infile=None, shared_path=_SHARED_CONFIG, **overrides):
+    """Build a :class:`SwntConfig`, layering shared file + per-file RBM seeds.
+
+    1. start from ``SwntConfig`` defaults;
+    2. apply the shared JSON (``data/_config.json``) if present -- only keys
+       that are real ``SwntConfig`` fields are used, others are ignored;
+    3. if ``infile`` is given and its ``.rbm.json`` sidecar exists, use it for
+       ``rbm_extra_centers``;
+    4. apply any explicit keyword ``overrides`` last (highest priority).
+
+    Missing files are simply skipped, so this is safe to call unconditionally.
+    """
+    valid = {f.name for f in fields(SwntConfig)}
+    values = {}
+
+    if shared_path and os.path.exists(shared_path):
+        with open(shared_path, encoding="utf-8") as fh:
+            for k, v in json.load(fh).items():
+                if k in valid:
+                    values[k] = tuple(v) if k in _TUPLE_FIELDS and isinstance(v, list) else v
+
+    if infile:
+        sidecar = rbm_sidecar_path(infile)
+        if os.path.exists(sidecar):
+            with open(sidecar, encoding="utf-8") as fh:
+                values["rbm_extra_centers"] = tuple(json.load(fh))
+
+    for k, v in overrides.items():
+        if k in valid:
+            values[k] = v
+
+    return SwntConfig(**values)
