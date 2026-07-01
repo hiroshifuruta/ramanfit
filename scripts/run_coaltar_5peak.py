@@ -209,8 +209,8 @@ ax[2].grid(True, alpha=0.3)
 ax[2].set_xlim(x[0], x[-1])
 
 plt.tight_layout()
-plt.savefig('ramanfit_coaltar_5peak.png', dpi=150, bbox_inches='tight')
-print("Plot saved: ramanfit_coaltar_5peak.png")
+plt.savefig('output/ramanfit_coaltar_5peak.png', dpi=150, bbox_inches='tight')
+print("Plot saved: output/ramanfit_coaltar_5peak.png")
 plt.show()
 
 print("\n" + "="*70)

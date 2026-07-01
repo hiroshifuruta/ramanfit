@@ -15,17 +15,17 @@ All files have been updated with the **OPTIMIZED 5-PEAK MODEL**:
 ## Updated Files
 
 ### Python Scripts (Ready to Run)
-1. **run_fitting_l405.py** ✓ UPDATED
+1. **scripts/run_fitting_l405.py** ✓ UPDATED
    - Optimized 5-peak model with 750-2000 cm⁻¹ region
-   - Output: ramfit_l405_optimized.png
+   - Output: output/ramfit_l405_optimized.png
 
-2. **run_coaltar_5peak.py** ✓ UPDATED
+2. **scripts/run_coaltar_5peak.py** ✓ UPDATED
    - Optimized 5-peak model with 750-2000 cm⁻¹ region
-   - Output: ramanfit_coaltar_5peak.png
+   - Output: output/ramanfit_coaltar_5peak.png
 
-3. **run_coaltar_optimized.py** ✓ ALREADY OPTIMIZED
+3. **scripts/run_coaltar_optimized.py** ✓ ALREADY OPTIMIZED
    - Original optimized version
-   - Output: ramanfit_coaltar_optimized.png
+   - Output: output/ramanfit_coaltar_optimized.png
 
 ### Jupyter Notebook
 4. **ramanfit_coaltar.ipynb** ✓ SYNCHRONIZED
@@ -66,12 +66,13 @@ All files have been updated with the **OPTIMIZED 5-PEAK MODEL**:
 **Choose one of these methods:**
 
 ### Method 1: Run Python Script (Quickest)
+Run from the repo root so the `output/` figure path resolves:
 ```bash
-python run_fitting_l405.py
+python scripts/run_fitting_l405.py
 # or
-python run_coaltar_5peak.py
+python scripts/run_coaltar_5peak.py
 # or
-python run_coaltar_optimized.py
+python scripts/run_coaltar_optimized.py
 ```
 
 ### Method 2: Run Jupyter Notebook

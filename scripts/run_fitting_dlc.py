@@ -167,6 +167,6 @@ ax[2].legend(loc='best', fontsize='small', ncol=2)
 ax[2].grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig("ramfit_dlc.png", dpi=130, bbox_inches='tight')
-print("\nPlot saved to: ramfit_dlc.png")
+plt.savefig("output/ramfit_dlc.png", dpi=130, bbox_inches='tight')
+print("\nPlot saved to: output/ramfit_dlc.png")
 plt.show()

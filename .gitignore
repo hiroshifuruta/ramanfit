@@ -134,3 +134,6 @@ dmypy.json
 
 # generated analysis summaries
 swnt_summary.txt
+
+# generated figures (scripts write PNGs here)
+/output/
